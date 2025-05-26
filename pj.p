@@ -12,8 +12,8 @@ config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "  ",
-    "database": "scraper",
+    "password": "  ",  #输入密码
+    "database": "   ",  #输入数据库名称
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor
 }
