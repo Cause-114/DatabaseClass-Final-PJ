@@ -9,6 +9,12 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import environ
+
+# 初始化环境变量
+env = environ.Env()
+# 读取 .env 文件中的配置
+environ.Env.read_env()
 
 from pathlib import Path
 
@@ -75,8 +81,15 @@ WSGI_APPLICATION = 'databasePJ.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('DB_NAME'),             # 从环境变量获取数据库名
+        'USER': env('DB_USER'),             # 从环境变量获取用户名
+        'PASSWORD': env('DB_PASSWORD'),     # 从环境变量获取密码
+        'HOST': env('DB_HOST', default='localhost'),
+        'PORT': env('DB_PORT', default='3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+
     }
 }
 
