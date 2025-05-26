@@ -12,8 +12,8 @@ config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "  ",  #输入密码
-    "database": "   ",  #输入数据库名称
+    "password": "Fyk1234567",  #输入密码
+    "database": "internet_message_manage_system",  #输入数据库名称
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor
 }
@@ -259,5 +259,5 @@ class StaticCrawler:
 
 
 if __name__ == "__main__":
-    crawler = StaticCrawler("ttps://jwc.fudan.edu.cn/")
+    crawler = StaticCrawler("https://jwc.fudan.edu.cn/")
     crawler.crawl(max_pages=35, delay=2)
