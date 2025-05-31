@@ -1,21 +1,19 @@
+# 这是最初前面写的PJ.py的代码
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-import os
 import time
 import json
 import pymysql
-import copy
-import re
 
 config = {
     "host": "localhost",
     "port": 3306,
     "user": "root",
-    "password": "Fyk1234567",  #输入密码
-    "database": "internet_message_manage_system",  #输入数据库名称
+    "password": "Windows1",  # 输入密码
+    "database": "samp_db",  # 输入数据库名称
     "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor
+    "cursorclass": pymysql.cursors.DictCursor,
 }
 
 
@@ -26,9 +24,11 @@ class StaticCrawler:
         self.visited = set()
         self.queue = [base_url]
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+        )
 
         # 初始化数据库连接
         self.connection = pymysql.connect(**config)
@@ -56,8 +56,8 @@ class StaticCrawler:
 
                 try:
                     response = self.session.get(url, timeout=10)
-                    if 'charset=gbk' in response.text.lower():
-                        response.encoding = 'gbk'
+                    if "charset=gbk" in response.text.lower():
+                        response.encoding = "gbk"
                     else:
                         response.encoding = response.apparent_encoding
 
@@ -66,7 +66,7 @@ class StaticCrawler:
                     count += 1
                     print(f"Crawling ({count}/{max_pages}): {url}")
 
-                    soup = BeautifulSoup(response.text, 'html.parser')
+                    soup = BeautifulSoup(response.text, "html.parser")
 
                     # 保存网页信息
                     self.save_webpage(url)
@@ -107,35 +107,8 @@ class StaticCrawler:
 
     def save_text(self, url, soup):
         """保存文本内容到Content表"""
-
-
-        # content_source = soup.select_one('div.main-right.fr') or soup
-        # # 动态处理文本内容（自动过滤空白内容）
-        # text = content_source.get_text(separator='\n', strip=True)
-        # # 智能回退机制（当main-right内容为空时抓取全站）
-        # if not text.strip():
-        #     text = soup.get_text(separator='\n', strip=True)
-
-
-        #除去menu版本
-        # # 创建副本避免修改原始soup
-        # soup_copy = copy.copy(soup)
-        # # 精准定位需要排除的菜单元素（支持多种选择器组合）
-        # exclude_selectors = [
-        #     '.menu',
-        #     '.navi-aside-toogle',
-        #     '[frag^="面板10"]'
-        # ]
-        # # 通过CSS选择器批量移除副本中的指定元素
-        # for element in soup_copy.select(','.join(exclude_selectors)):
-        #     element.decompose()  # 仅在副本上操作
-        # # 修正文本提取参数（注意换行符修正）
-        # text = soup_copy.get_text(separator='\n', strip=True)
-
-
-
-        #初始版本
-        text = soup.get_text(separator='\n', strip=True)
+        # 初始版本
+        text = soup.get_text(separator="\n", strip=True)
         insert_content = """
         INSERT INTO Content (text, webpage_url, type)
         VALUES (%s, %s, 'text')
@@ -145,15 +118,15 @@ class StaticCrawler:
 
     def process_images(self, url, soup):
         """处理图片信息"""
-        img_tags = soup.find_all('img')
+        img_tags = soup.find_all("img")
         for img in img_tags:
-            img_url = urljoin(url, img.get('src'))
-            if not img_url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+            img_url = urljoin(url, img.get("src"))
+            if not img_url.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
                 continue
 
-            alt_text = img.get('alt', '').strip()[:250]  # 限制长度符合字段要求
-            width = img.get('width', 'unknown')
-            height = img.get('height', 'unknown')
+            alt_text = img.get("alt", "").strip()[:250]  # 限制长度符合字段要求
+            width = img.get("width", "unknown")
+            height = img.get("height", "unknown")
             resolution = f"{width}x{height}"[:50]
 
             # 保存到DataSource
@@ -177,11 +150,13 @@ class StaticCrawler:
 
     def find_api_data(self, url, soup):
         """处理API数据"""
-        script_tags = soup.find_all('script', type='application/json')
+        script_tags = soup.find_all("script", type="application/json")
         for script in script_tags:
             try:
                 data = json.loads(script.string)
-                data_str = json.dumps(data, ensure_ascii=False)[:65535]  # 限制长度符合TEXT字段
+                data_str = json.dumps(data, ensure_ascii=False)[
+                    :65535
+                ]  # 限制长度符合TEXT字段
 
                 # 保存到DataSource
                 insert_data_source = """
@@ -209,40 +184,9 @@ class StaticCrawler:
                 pass
 
     def extract_links(self, url, soup):
-        # # 存储所有找到的链接（避免重复）
-        # links = set()
-        #
-        # # 直接提取所有 <a> 标签的 href
-        # for a_tag in soup.find_all('a', href=True):
-        #     links.add(a_tag['href'])
-        #
-        # # 提取 <li> 标签中的潜在链接（包括嵌套 <a> 和自定义属性）
-        # for li_tag in soup.find_all('li'):
-        #     # 情况1: <li> 内嵌套了 <a> 标签
-        #     a_tag = li_tag.find('a', href=True)
-        #     if a_tag:
-        #         links.add(a_tag['href'])
-        #     # 情况2: <li> 自身有 data-href 属性
-        #     data_href = li_tag.get('data-href')
-        #     if data_href:
-        #         links.add(data_href)
-        #     # 情况3: 从 onclick 等属性中解析 URL
-        #     onclick = li_tag.get('onclick', '')
-        #     url_match = re.search(r"window\.location\s*=\s*'([^']+)'", onclick)
-        #     if url_match:
-        #         links.add(url_match.group(1))
-        #
-        # # 处理并加入队列
-        # for path in links:
-        #     full_url = urljoin(url, path)
-        #     parsed_url = urlparse(full_url)
-        #     if parsed_url.netloc == self.domain and full_url not in self.visited:
-        #         self.queue.append(full_url)
-
-
-        links = soup.find_all('a', href=True)
+        links = soup.find_all("a", href=True)
         for link in links:
-            full_url = urljoin(url, link['href'])
+            full_url = urljoin(url, link["href"])
             parsed_url = urlparse(full_url)
             if parsed_url.netloc == self.domain and full_url not in self.visited:
                 self.queue.append(full_url)
