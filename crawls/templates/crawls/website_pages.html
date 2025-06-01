@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>网站 {{ website.domain }} 的所有网页</h2>
+<p><a href="{% url 'show_webpages' %}">返回网页列表</a></p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>URL</th>
+            <th>爬取时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for page in pages %}
+        <tr>
+            <td>{{ page.url }}</td>
+            <td>{{ page.crawl_time }}</td>
+            <td>
+                <a href="{% url 'webpage_contents' page.url %}" class="btn btn-sm btn-primary">查看内容</a>
+                <a href="{% url 'webpage_images' page.url %}" class="btn btn-sm btn-secondary">查看图片</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">暂无数据</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -13,8 +13,21 @@
             <h4 class="alert-heading">爬取任务完成！</h4>
             <p>已完成对 <strong>{{ URL }}</strong> 的内容爬取。</p>
             <hr>
-            <a href="{% url 'user_input' %}" class="btn btn-secondary">返回重新提交</a>
-            <a href="{% url 'show_webpages' %}" class="btn btn-success">查看抓取网页列表</a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'user_input' %}" class="btn btn-secondary">返回重新提交</a>
+                <a href="{% url 'show_webpages' %}" class="btn btn-success">查看抓取网页列表</a>
+                <a href="{% url 'search_content' %}" class="btn btn-info text-white">关键词搜索内容</a>
+                <!-- 如需查看某网站下网页或某网页的图片，需从网页列表中点击进入 -->
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>下一步推荐：</h5>
+            <ul>
+                <li>从“抓取网页列表”中选择一个网页，查看对应的图片和文本内容。</li>
+                <li>使用“关键词搜索”入口查找相关信息。</li>
+                <li>返回上一步更换参数重新爬取。</li>
+            </ul>
         </div>
     </div>
 </body>

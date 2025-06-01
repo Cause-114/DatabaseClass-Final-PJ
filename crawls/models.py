@@ -21,7 +21,7 @@ class Website(models.Model):
     crawl_status = models.CharField(
         max_length=10, choices=CRAWL_STATUS_CHOICES
     )  # 爬取状态
-
+    err = models.CharField(max_length=255, null=True)
     def __str__(self):
         return self.domain
 
@@ -60,7 +60,7 @@ class Content(models.Model):
 # 数据源模型
 class DataSource(models.Model):
     data_source_url = models.CharField(max_length=500, primary_key=True)  # 数据源URL
-    publisher = models.CharField(max_length=100,null=True)  # 发布者
+    publisher = models.CharField(max_length=100, null=True)  # 发布者
     publish_time = models.DateTimeField(null=True)  # 发布时间
 
     def __str__(self):

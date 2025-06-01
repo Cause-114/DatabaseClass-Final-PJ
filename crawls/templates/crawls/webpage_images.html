@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>网页图片 - {{ webpage.url }}</h2>
+<p><a href="{% url 'show_webpages' %}">返回网页列表</a></p>
+<div class="row">
+    {% for img in images %}
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <img src="{{ img.url.data_source_url }}" class="card-img-top" alt="{{ img.description }}">
+            <div class="card-body">
+                <p class="card-text">{{ img.description }}</p>
+                <small>分辨率: {{ img.resolution }}</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>暂无图片</p>
+    {% endfor %}
+</div>
+{% endblock %}

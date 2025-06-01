@@ -79,3 +79,34 @@ ADD CONSTRAINT `crawls_datasourcecon_content_id_e0cbab3c_fk_crawls_co` FOREIGN K
 
 ALTER TABLE `crawls_datasourcecontent`
 ADD CONSTRAINT `crawls_datasourcecon_data_source_id_366d0a9c_fk_crawls_da` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`);
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+truncate table crawls_content;
+
+truncate table crawls_image;
+
+truncate table crawls_datasource;
+
+truncate table crawls_datasourcecontent;
+
+truncate table crawls_webpage;
+
+truncate table crawls_website;
+
+SET FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS = 0;
+
+truncate table content;
+
+truncate table image;
+
+truncate table datasource;
+
+truncate table datasource_content;
+
+truncate table webpage;
+
+truncate table website;
+
+SET FOREIGN_KEY_CHECKS = 1;
