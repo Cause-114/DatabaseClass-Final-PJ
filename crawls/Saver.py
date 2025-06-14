@@ -1,6 +1,7 @@
 import re
 import json
 import logging
+import jieba.analyse
 from urllib.parse import urljoin
 from django.utils import timezone
 from url_normalize import url_normalize
@@ -49,14 +50,28 @@ class Saver:
                 r"\n\s*\n", "\n\n", text_source.get_text(separator="\n", strip=True)
             )
 
+            paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+            paragraph_keywords = []
+            for para in paragraphs:
+                if para:
+                    # 提取每段top1关键词
+                    keywords = jieba.analyse.extract_tags(para, topK=1)
+                    if keywords:
+                        paragraph_keywords.append(keywords[0])
+            
+            # 合并所有关键词
+            keywords_str = ",".join(set(paragraph_keywords))  # 去重处理
+
+
+
             webpage_qs = Webpage.objects.filter(url=url)
             if webpage_qs.exists():
                 Content.objects.update_or_create(
                     webpage=webpage_qs.first(),
                     defaults={
-                        "keywords": "",
+                        "keywords": keywords_str,
                         "type": "text",
-                        "text": text,
+                        "text": "\n\n".join(paragraphs),
                     },
                 )
         except Exception as e:
