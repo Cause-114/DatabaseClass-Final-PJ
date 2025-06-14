@@ -50,7 +50,6 @@ class Crawler:
                     continue
                 result = Downloader.download(url)
                 if result is None:
-                    print("114514")
                     logging.warning(f"跳过无法下载页面: {url}")
                     continue
 
@@ -77,6 +76,7 @@ class Crawler:
             self.update_crawl_status(
                 "fail" if self.error_occurred else "complete", self.error_message
             )
+            return self.domain
 
     def extract_links(self, url, soup):
         links = soup.find_all("a", href=True)

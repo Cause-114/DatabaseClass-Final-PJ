@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>网页图片 - {{ webpage.url }}</h2>
-<p><a href="{% url 'show_webpages' %}">返回网页列表</a></p>
+<p><a href="{% url 'Query_SitePages' webpage.website.domain %}">返回所属网站网页列表</a></p>
 <div class="row">
     {% for img in images %}
     <div class="col-md-3 mb-3">

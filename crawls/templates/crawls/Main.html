@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero mb-4">
+    <h1>欢迎使用 DataSpider 数据库管理系统</h1>
+    <p>这是一个数据库课程的网页数据抓取与管理平台项目</p>
+</section>
+
+<section class="stats mb-5">
+    <div class="row text-center g-4">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4>已爬取网站</h4>
+                <p class="stat-value fs-4 fw-bold">{{ website_count }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4>网页总数</h4>
+                <p class="stat-value fs-4 fw-bold">{{ page_count }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h4>关键词记录</h4>
+                <p class="stat-value fs-4 fw-bold">{{ keyword_count }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="activity mb-5">
+    <h3 class="mb-3">最近爬取记录</h3>
+    <ul class="list-group">
+        {% for page in recent_pages %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ page|truncatechars:50 }} - {{ page.crawl_time|date:"Y-m-d H:i" }}
+            <a href="{% url 'Query_SitePages' page.website.domain %}" class="btn btn-sm btn-outline-primary">查看网页</a>
+        </li>
+        {% empty %}
+        <li class="list-group-item">暂无爬取记录</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

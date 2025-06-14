@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">最近成功爬取的网站</h2>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>域名</th>
+            <th>对应网页数目</th>
+            <th>查看详情</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for site in websites %}
+        <tr>
+            <td>{{ site.domain }}</td>
+            <td>{{ site.page_count }}</td> 
+            <td><a href="{% url 'Query_SitePages' site.domain %} ">查看具体网页</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if websites|length == 0 %}
+<div class="alert alert-info">暂无爬取成功的网站记录。</div>
+{% endif %}
+{% endblock %}

@@ -28,7 +28,8 @@ class Website(models.Model):
 
 # 网页模型
 class Webpage(models.Model):
-    url = models.CharField(max_length=500, primary_key=True)  # URL
+    id = models.AutoField(primary_key=True) 
+    url = models.CharField(max_length=500, unique=True)  # URL
     crawl_time = models.DateTimeField()  # 抓取时间
     website = models.ForeignKey(
         Website, related_name="webpages", on_delete=models.CASCADE

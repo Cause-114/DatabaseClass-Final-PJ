@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+        <div class="alert alert-success shadow">
+            <h4 class="alert-heading">爬取任务完成！</h4>
+            <p>已完成对 <strong>{{ Domain }}</strong> 的内容爬取。</p>
+            <hr>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'Add_Input' %}" class="btn btn-secondary">重新提交爬取任务</a>
+                <a href="{% url 'Query_SitePages' Domain %}" class="btn btn-success">查看本次抓取网页</a>
+                <a href="{% url 'Query_KeywordSearch' %}" class="btn btn-info text-white">关键词搜索内容</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

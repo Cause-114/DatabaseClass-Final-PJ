@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>搜索内容结果</h2>
-<form method="get" action="{% url 'search_content' %}" class="mb-3">
+<form method="get" action="{% url 'Query_KeywordSearch' %}" class="mb-3">
     <input type="text" name="q" placeholder="请输入关键词" value="{{ query }}" class="form-control" />
     <button type="submit" class="btn btn-primary mt-2">搜索</button>
 </form>
@@ -24,10 +24,10 @@
             <td>{{ content.content_id }}</td>
             <td>{{ content.keywords }}</td>
             <td>
-                <a href="{% url 'webpage_contents' content.webpage.url %}">{{ content.webpage.url }}</a>
+                <a href="{% url 'Query_PageContents' content.webpage.id %}">{{ content.webpage.url }}</a>
             </td>
             <td>{{ content.get_type_display }}</td>
-            <td>{{ content.text|truncatewords:20 }}</td>
+            <td>{{ content.text|truncatewords:2 }}</td>
         </tr>
         {% empty %}
         <tr>

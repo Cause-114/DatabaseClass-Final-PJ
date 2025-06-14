@@ -4,18 +4,25 @@ from . import views
 
 
 urlpatterns = [
-    path("", views.user_input_view, name="user_input"),
-    path("webpages/", views.show_webpages, name="show_webpages"),
+    path("", views.main_view, name="Main"),
+    ####################### 增 ############################
+    path("Add/", views.user_input_view, name="Add_Input"),
+    ####################### 删 ############################
+    ####################### 改 ############################
+    ####################### 查 ############################
+    path("Query/KeySearch/", views.search_content_view, name="Query_KeywordSearch"),
+    path("Query/Websites/", views.recent_websites, name="Query_Website"),
     path(
-        "webpage/<path:url>/images/", views.webpage_images_view, name="webpage_images"
+        "Query/<str:domain>/pages/", views.website_webpages_view, name="Query_SitePages"
     ),
     path(
-        "webpage/<path:url>/contents/",
+        "Query/page/<int:page_id>/images/",
+        views.webpage_images_view,
+        name="Query_PageImages",
+    ),
+    path(
+        "Query/page/<int:page_id>/contents/",
         views.webpage_content_view,
-        name="webpage_contents",
-    ),
-    path("search/", views.search_content_view, name="search_content"),
-    path(
-        "website/<str:domain>/pages/", views.website_webpages_view, name="website_pages"
+        name="Query_PageContents",
     ),
 ]
