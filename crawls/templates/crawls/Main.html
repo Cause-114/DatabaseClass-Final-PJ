@@ -1,32 +1,82 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero mb-4">
-    <h1>欢迎使用 DataSpider 数据库管理系统</h1>
-    <p>这是一个数据库课程的网页数据抓取与管理平台项目</p>
+<section class="hero">
+    <div class="container">
+        <h1>欢迎使用 DataSpider 数据库管理系统</h1>
+        <p>实时获取、精准分析、直观展示 - 让数据为您创造价值</p>
+        <div class="cta-buttons">
+                    <a href="{% url 'Add_Input' %}" class="btn btn-primary">开始数据探索</a>
+        </div>
+    <div>
 </section>
 
 <section class="stats mb-5">
     <div class="row text-center g-4">
         <div class="col-md-4">
             <div class="card p-3">
-                <h4>已爬取网站</h4>
-                <p class="stat-value fs-4 fw-bold">{{ website_count }}</p>
+                <div class="stat-value">{{ website_count }} <i class="fas fa-arrow-up"></i></div>
+                <div class="stat-label">已爬取网站</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3">
-                <h4>网页总数</h4>
-                <p class="stat-value fs-4 fw-bold">{{ page_count }}</p>
+                <div class="stat-value">{{ page_count }}</div>
+                <div class="stat-label">网页总数</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3">
-                <h4>关键词记录</h4>
-                <p class="stat-value fs-4 fw-bold">{{ keyword_count }}</p>
+                <div class="stat-value">{{ keyword_count }} <i class="fas fa-arrow-up"></i></div>
+                <div class="stat-label">关键词记录</div>
             </div>
         </div>
     </div>
 </section>
 
-
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>DataSpider</h4>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">智能数据采集与可视化平台</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>产品</h4>
+                <ul class="footer-links">
+                    <li><a href="#">功能</a></li>
+                    <li><a href="#">定价</a></li>
+                    <li><a href="#">案例</a></li>
+                    <li><a href="#">更新日志</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>资源</h4>
+                <ul class="footer-links">
+                    <li><a href="#">文档</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">帮助中心</a></li>
+                    <li><a href="#">社区</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>公司</h4>
+                <ul class="footer-links">
+                    <li><a href="#">关于我们</a></li>
+                    <li><a href="#">博客</a></li>
+                    <li><a href="#">联系我们</a></li>
+                    <li><a href="#">隐私政策</a></li>
+                </ul>
+            </div>
+            
+        </div>
+        <div class="copyright">
+            &copy; © 2024~2025春 复旦大学大数据学院 数据库及实现 Group 4 - DataSpider。
+        </div>
+    </div>
+</footer>
 {% endblock %}
