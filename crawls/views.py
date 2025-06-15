@@ -97,26 +97,6 @@ def user_input_view(request):
         form = UserInputForm()
     return render(request, "crawls/Add_Input.html", {"form": form})
 
-
-def crawl_task_status_view(request):
-    running_tasks = CrawlTask.objects.filter(
-        user=request.user, status="crawling"
-    ).select_related("website")
-    completed_tasks = CrawlTask.objects.filter(
-        user=request.user, status="complete"
-    ).select_related("website")
-    failed_tasks = CrawlTask.objects.filter(
-        user=request.user, status="fail"
-    ).select_related("website")
-
-    context = {
-        "running_tasks": running_tasks,
-        "completed_tasks": completed_tasks,
-        "failed_tasks": failed_tasks,
-    }
-    return render(request, "crawls/Add_Status.html", context)
-
-
 ####################### 删 ############################
 
 
@@ -177,6 +157,50 @@ def recent_websites(request):
             .order_by("-domain")
         )
     return render(request, "crawls/Query_Website.html", {"websites": websites})
+
+
+# 展示已经爬取的网页
+@login_required
+def recent_webpages(request):
+    if request.user.is_superuser:
+        webpages = Webpage.objects.all().distinct().order_by("-crawl_time")
+    else:
+        webpages = (
+            Webpage.objects.filter(website__user=request.user)
+            .distinct()
+            .order_by("-crawl_time")
+        )
+    return render(request, "crawls/Query_Webpage.html", {"webpages": webpages})
+
+
+# 展示所有爬取状态
+@login_required
+def crawl_task_status_view(request):
+    if request.user.is_superuser:
+        running_tasks = CrawlTask.objects.filter(status="crawling").select_related(
+            "website"
+        )
+        completed_tasks = CrawlTask.objects.filter(status="complete").select_related(
+            "website"
+        )
+        failed_tasks = CrawlTask.objects.filter(status="fail").select_related("website")
+    else:
+        running_tasks = CrawlTask.objects.filter(
+            user=request.user, status="crawling"
+        ).select_related("website")
+        completed_tasks = CrawlTask.objects.filter(
+            user=request.user, status="complete"
+        ).select_related("website")
+        failed_tasks = CrawlTask.objects.filter(
+            user=request.user, status="fail"
+        ).select_related("website")
+
+    context = {
+        "running_tasks": running_tasks,
+        "completed_tasks": completed_tasks,
+        "failed_tasks": failed_tasks,
+    }
+    return render(request, "crawls/Add_Status.html", context)
 
 
 # 展示某个网站的所有网页
