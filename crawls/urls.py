@@ -25,6 +25,11 @@ urlpatterns = [
         name="Query_PageContents",
     ),
     path(
+        "About/us/",
+        views.about_us_view,
+        name="About_us",
+    ),
+    path(
         "content/<int:content_id>/text/",
         views.view_full_content,
         name="view_full_content",

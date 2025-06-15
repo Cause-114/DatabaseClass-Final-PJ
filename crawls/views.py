@@ -200,6 +200,11 @@ def webpage_content_view(request, url):
         },
     )
 
+def about_us_view(request):
+    return render(
+        request,
+        "crawls/About_us.html"
+    )
 
 def view_full_content(request, content_id):
     content = get_object_or_404(Content, pk=content_id)
