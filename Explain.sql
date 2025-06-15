@@ -2,26 +2,16 @@
 -- 数据库操作概念展示，实际操作已经嵌入Python代码，所以本文件不是运行项目的必须文件。
 CREATE DATABASE samp_db;
 use samp_db;-- 在这里变成你本机的数据库名称。
-------------------------------表的创建-----------------------------------------------
---
+------------------------------ Create core tables --------------------------------
+
 -- Create model DataSource
---
 CREATE TABLE `crawls_datasource` (
     `data_source_url` varchar(500) NOT NULL PRIMARY KEY,
     `publisher` varchar(100) NOT NULL,
     `publish_time` datetime(6) NOT NULL
 );
---
--- Create model Webpage
---
-CREATE TABLE `crawls_webpage` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `url` varchar(500) NOT NULL UNIQUE,
-    `crawl_time` datetime(6) NOT NULL
-);
---
+
 -- Create model Website
---
 CREATE TABLE `crawls_website` (
     `domain` varchar(255) NOT NULL PRIMARY KEY,
     `company` varchar(100) NOT NULL,
@@ -29,64 +19,63 @@ CREATE TABLE `crawls_website` (
     `crawl_freq` varchar(10) NOT NULL,
     `crawl_status` varchar(10) NOT NULL
 );
---
+
+-- Create model CrawlTask
+CREATE TABLE `crawls_crawltask` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `task_time` datetime(6) NOT NULL,
+    `status` varchar(10) NOT NULL,
+    `website_id` varchar(255) NOT NULL,
+    CONSTRAINT `crawls_crawltask_website_id_fk` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`domain`)
+);
+
+-- Create model Webpage
+CREATE TABLE `crawls_webpage` (
+    `url` varchar(500) NOT NULL PRIMARY KEY,
+    `crawl_time` datetime(6) NOT NULL,
+    `website_id` varchar(255) NOT NULL,
+    `crawltask_id` integer NOT NULL,
+    CONSTRAINT `crawls_webpage_website_id_fk` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`domain`),
+    CONSTRAINT `crawls_webpage_crawltask_id_fk` FOREIGN KEY (`crawltask_id`) REFERENCES `crawls_crawltask` (`id`)
+);
+
 -- Create model Image
---
 CREATE TABLE `crawls_image` (
     `image_url` varchar(500) NOT NULL PRIMARY KEY,
     `description` varchar(255) NOT NULL,
     `resolution` varchar(50) NOT NULL,
     `data_source_id` varchar(500) NOT NULL,
-    `webpage_id` varchar(500) NOT NULL
+    `webpage_id` varchar(500) NOT NULL,
+    CONSTRAINT `crawls_image_data_source_fk` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`),
+    CONSTRAINT `crawls_image_webpage_fk` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`url`)
 );
---
+
 -- Create model Content
---
 CREATE TABLE `crawls_content` (
     `content_id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `text` longtext NOT NULL,
     `keywords` varchar(500) NOT NULL,
     `type` varchar(10) NOT NULL,
-    `webpage_id` varchar(500) NOT NULL
+    `webpage_id` varchar(500) NOT NULL,
+    CONSTRAINT `crawls_content_webpage_fk` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`url`)
 );
---
--- Add field website to webpage
---
-ALTER TABLE `crawls_webpage`
-ADD COLUMN `website_id` varchar(255) NOT NULL,
-ADD CONSTRAINT `crawls_webpage_website_id_5dec4ee6_fk_crawls_website_domain` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`domain`);
---
--- Create model DataSourceContent
---
+
+-- Create model DataSourceContent (中间表)
 CREATE TABLE `crawls_datasourcecontent` (
     `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `content_id` integer NOT NULL,
-    `data_source_id` varchar(500) NOT NULL
+    `data_source_id` varchar(500) NOT NULL,
+    CONSTRAINT `datasource_content_unique` UNIQUE (
+        `data_source_id`,
+        `content_id`
+    ),
+    CONSTRAINT `crawls_datasourcecontent_content_fk` FOREIGN KEY (`content_id`) REFERENCES `crawls_content` (`content_id`),
+    CONSTRAINT `crawls_datasourcecontent_datasource_fk` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`)
 );
-
-ALTER TABLE `crawls_image`
-ADD CONSTRAINT `crawls_image_data_source_id_aaca37d7_fk_crawls_da` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`);
-
-ALTER TABLE `crawls_image`
-ADD CONSTRAINT `crawls_image_webpage_id_0557f0e0_fk_crawls_webpage_url` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`url`);
-
-ALTER TABLE `crawls_content`
-ADD CONSTRAINT `crawls_content_webpage_id_285fd3a8_fk_crawls_webpage_url` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`url`);
-
-ALTER TABLE `crawls_datasourcecontent`
-ADD CONSTRAINT `crawls_datasourcecontent_data_source_id_content_id_fbcd1817_uniq` UNIQUE (
-    `data_source_id`,
-    `content_id`
-);
-
-ALTER TABLE `crawls_datasourcecontent`
-ADD CONSTRAINT `crawls_datasourcecon_content_id_e0cbab3c_fk_crawls_co` FOREIGN KEY (`content_id`) REFERENCES `crawls_content` (`content_id`);
-
-ALTER TABLE `crawls_datasourcecontent`
-ADD CONSTRAINT `crawls_datasourcecon_data_source_id_366d0a9c_fk_crawls_da` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`);
 -----------------------------------删除数据----------------------------------
 SET FOREIGN_KEY_CHECKS = 0;
 truncate table crawls_content;
+TRUNCATE TABLE crawls_crawltask;
 truncate table crawls_image;
 truncate table crawls_datasource;
 truncate table crawls_datasourcecontent;
@@ -153,30 +142,50 @@ DELETE FROM crawls_content WHERE keywords LIKE '%示例关键字%';
 DELETE FROM crawls_website WHERE crawl_status = 'fail';
 
 -----------------------------------插入数据-------------------------------------
+-- 插入网站
 INSERT INTO
     crawls_website (
         domain,
         company,
         contact,
         crawl_freq,
-        crawl_status,
-        err
+        crawl_status
     )
 VALUES (
         'example.com',
         '示例公司',
         'contact@example.com',
         'daily',
-        'complete',
-        NULL
+        'complete'
     );
+
+-- 插入爬取任务（与网站绑定）
 INSERT INTO
-    crawls_webpage (url, crawl_time, website_id)
+    crawls_crawltask (task_time, status, website_id)
+VALUES (
+        '2025-06-14 14:30:00',
+        'finished',
+        'example.com'
+    );
+
+-- 假设刚刚插入的任务 id = 1（你可以用 SELECT LAST_INSERT_ID() 获取）
+
+-- 插入网页（关联网站 & 任务）
+INSERT INTO
+    crawls_webpage (
+        url,
+        crawl_time,
+        website_id,
+        crawltask_id
+    )
 VALUES (
         'https://example.com/page1',
         '2025-06-14 15:00:00',
-        'example.com'
+        'example.com',
+        1
     );
+
+-- 插入网页内容
 INSERT INTO
     crawls_content (
         text,
@@ -190,19 +199,25 @@ VALUES (
         '欢迎,主页',
         'text'
     );
+
+-- 插入图片
 INSERT INTO
     crawls_image (
-        url_id,
+        image_url,
         webpage_id,
         description,
-        resolution
+        resolution,
+        data_source_id
     )
 VALUES (
         'https://example.com/img1.jpg',
         'https://example.com/page1',
         'logo图片',
-        '1920x1080'
+        '1920x1080',
+        'https://example.com/img1.jpg'
     );
+
+-- 插入数据源
 INSERT INTO
     crawls_datasource (
         data_source_url,
@@ -214,6 +229,8 @@ VALUES (
         '示例发布者',
         '2025-06-14 10:30:00'
     );
+
+-- 插入数据源与内容的关联
 INSERT INTO
     crawls_datasourcecontent (data_source_id, content_id)
 VALUES (
@@ -221,44 +238,53 @@ VALUES (
         1
     );
 -----------------------------------修改数据-------------------------------------
+-- 修改网站信息
 UPDATE crawls_website
 SET
     company = '新公司名称',
     contact = 'new_contact@example.com',
-    crawl_status = 'crawling',
-    err = '暂时连接失败'
+    crawl_status = 'crawling'
 WHERE
     domain = 'example.com';
+
+-- 修改网页时间
 UPDATE crawls_webpage
 SET
     crawl_time = '2025-06-14 18:00:00'
 WHERE
     url = 'https://example.com/page1';
+
+-- 修改网页内容
 UPDATE crawls_content
 SET
     keywords = '欢迎,主页,示例',
     type = 'link'
 WHERE
     content_id = 1;
+
+-- 修改图片
 UPDATE crawls_image
 SET
     description = '网站主图',
     resolution = '1280x720'
 WHERE
-    url_id = 'https://example.com/img1.jpg';
+    image_url = 'https://example.com/img1.jpg';
+
+-- 修改数据源
 UPDATE crawls_datasource
 SET
     publisher = '新发布者',
     publish_time = '2025-06-14 12:00:00'
 WHERE
     data_source_url = 'https://example.com/img1.jpg';
--- DataDourceContent是联合主键所以得先删后加
--- 1. 先删除旧的
+
+-- 删除原有数据源-内容关联
 DELETE FROM crawls_datasourcecontent
 WHERE
     data_source_id = 'https://example.com/img1.jpg'
     AND content_id = 1;
--- 2. 插入新的
+
+-- 添加新的数据源-内容关联（假设换成 img2.jpg）
 INSERT INTO
     crawls_datasourcecontent (data_source_id, content_id)
 VALUES (

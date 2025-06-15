@@ -3,33 +3,38 @@ from django.db import models
 
 # 网站模型
 class Website(models.Model):
-    DOMAIN_CHOICES = [
-        ("daily", "Daily"),
-        ("weekly", "Weekly"),
-        ("manual", "Manual"),
-    ]
-    CRAWL_STATUS_CHOICES = [
-        ("complete", "Complete"),
-        ("crawling", "Crawling"),
-        ("fail", "Fail"),
-    ]
+    domain = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=255, null=True, blank=True)  # 网站标题
+    description = models.TextField(null=True, blank=True)  # 网站描述
+    homepage = models.URLField(null=True, blank=True)  # 首页地址
 
-    domain = models.CharField(max_length=255, primary_key=True)  # 域名
-    company = models.CharField(max_length=100)  # 所属公司
-    contact = models.CharField(max_length=100)  # 联系信息
-    crawl_freq = models.CharField(max_length=10, choices=DOMAIN_CHOICES)  # 爬取频率
-    crawl_status = models.CharField(
-        max_length=10, choices=CRAWL_STATUS_CHOICES
-    )  # 爬取状态
-    err = models.CharField(max_length=255, null=True)
     def __str__(self):
         return self.domain
 
 
+class CrawlTask(models.Model):
+    STATUS_CHOICES = [
+        ("crawling", "Crawling"),
+        ("complete", "Complete"),
+        ("fail", "Failed"),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    website = models.ForeignKey(
+        "Website", on_delete=models.CASCADE, related_name="crawl_tasks"
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    error_msg = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.website.domain} - {self.status} ({self.start_time})"
+
+
 # 网页模型
 class Webpage(models.Model):
-    id = models.AutoField(primary_key=True) 
-    url = models.CharField(max_length=500, unique=True)  # URL
+    url = models.CharField(max_length=500, primary_key=True)  # URL
     crawl_time = models.DateTimeField()  # 抓取时间
     website = models.ForeignKey(
         Website, related_name="webpages", on_delete=models.CASCADE

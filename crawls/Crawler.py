@@ -1,14 +1,13 @@
-from urllib.parse import urlparse, urljoin
-from .models import Website
-from .Saver import Saver
-from url_normalize import url_normalize
+from .models import Website, CrawlTask
 from .Downloader import Downloader
+from .Saver import Saver
+from django.utils import timezone
+from urllib.parse import urlparse, urljoin
+from url_normalize import url_normalize
 import logging
-import time
-
 
 class Crawler:
-    def __init__(self, base_url):
+    def __init__(self, base_url, task_id=None):
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s [%(levelname)s] %(message)s",
@@ -18,37 +17,26 @@ class Crawler:
         self.domain = urlparse(base_url).netloc
         self.visited = set()
         self.queue = [self.base_url]
+        self.website, _ = Website.objects.get_or_create(domain=self.domain)
+        self.task = CrawlTask.objects.get(id=task_id) if task_id else None
         self.error_occurred = False
         self.error_message = ""
         self.stats = {"pages_crawled": 0}
-        self.init_website()
+        if self.task:
+            self.task.start_time = timezone.now()
+            self.task.save()
 
-    def init_website(self):
-        try:
-            Website.objects.get_or_create(
-                domain=self.domain,
-                defaults={"crawl_freq": "manual", "crawl_status": "crawling"},
-            )
-        except Exception as e:
-            self.handle_fatal_error(f"网站初始化失败: {e}")
-            self.update_crawl_status("fail", self.error_message)
-
-    def handle_fatal_error(self, message):
-        self.error_occurred = True
-        self.error_message = message
-
-    def crawl(self, max_pages=10, delay=1):
+    def crawl(self, max_pages=10, TimeOut=1):
         try:
             if self.error_occurred:
                 print("爬取已中止：初始化阶段发生错误")
                 return
-
-            count = 0
+            count = 0            
             while self.queue and count < max_pages:
                 url = self.queue.pop(0)
                 if url in self.visited:
                     continue
-                result = Downloader.download(url)
+                result = Downloader.download(url=url,timeout=TimeOut)
                 if result is None:
                     logging.warning(f"跳过无法下载页面: {url}")
                     continue
@@ -62,21 +50,30 @@ class Crawler:
                 count += 1
                 self.stats["pages_crawled"] += 1
                 logging.info(f"[{count}/{max_pages}] Crawling: {url}")
-
-                try:
-                    Saver.save(self.domain, normalized_url, soup)
-                    self.extract_links(normalized_url, soup)
-                except Exception as e:
-                    logging.error(f"保存或链接提取失败: {normalized_url}: {e}")
-
-                time.sleep(delay)
+                Saver.save(self.domain, normalized_url, soup)
+                if count == 1:
+                    self.extract_website_info(soup)  # 抽取站点信息
+                # if(len(self.queue)<max_pages-count):
+                #     print(len(self.queue),count)
+                self.extract_links(normalized_url, soup)
+            print(len(self.queue))
         except Exception as e:
-            print(e)
+            self.handle_fatal_error(str(e))
         finally:
-            self.update_crawl_status(
-                "fail" if self.error_occurred else "complete", self.error_message
-            )
-            return self.domain
+            self.finish_task()
+
+    def extract_website_info(self, soup):
+        try:
+            title = soup.title.string.strip() if soup.title else ""
+            desc_tag = soup.find("meta", attrs={"name": "description"})
+            description = desc_tag["content"].strip() if desc_tag and "content" in desc_tag.attrs else ""
+
+            self.website.title = title
+            self.website.description = description
+            self.website.homepage = self.base_url
+            self.website.save()
+        except Exception as e:
+            logging.warning(f"提取网站信息失败: {e}")
 
     def extract_links(self, url, soup):
         links = soup.find_all("a", href=True)
@@ -86,14 +83,12 @@ class Crawler:
             if parsed_url.netloc == self.domain and full_url not in self.visited:
                 self.queue.append(full_url)
 
-    def update_crawl_status(self, status, error_message=None):
-        try:
-            website_obj = Website.objects.filter(domain=self.domain)
-            if status == "fail":
-                website_obj.update(crawl_status="fail", err=error_message)
-            else:
-                website_obj.update(crawl_status="complete")
-            logging.info(f"爬取状态更新为: {status}")
-        except Exception as e:
-            logging.error(f"更新状态失败: {e}")
-            print(f"[Crawler] 状态更新失败: {e}")
+    def finish_task(self):
+        status = "fail" if self.error_occurred else "complete"
+        if self.task:
+            self.task.status = status
+            self.task.end_time = timezone.now()
+            if self.error_occurred:
+                self.task.error_msg = self.error_message
+            self.task.save()
+        logging.info(f"任务完成: {status}")

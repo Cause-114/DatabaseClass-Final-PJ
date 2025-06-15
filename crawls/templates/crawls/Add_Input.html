@@ -1,23 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow p-4">
-        <h2 class="mb-4">网页爬虫任务</h2>
-        <form method="post">
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow p-4" style="width: 100%; max-width: 600px;">
+        <h2 class="mb-4 text-center">网页爬虫任务</h2>
+        <form method="post" novalidate>
             {% csrf_token %}
+
             <div class="mb-3">
                 <label for="id_URL" class="form-label">起始网址 (URL)</label>
                 {{ form.URL }}
+                {% for error in form.URL.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
             </div>
+
             <div class="mb-3">
                 <label for="id_MaxPage" class="form-label">最大爬取页数</label>
                 {{ form.MaxPage }}
+                {% for error in form.MaxPage.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
             </div>
+
             <div class="mb-3">
-                <label for="id_Delay" class="form-label">每页间隔（秒）</label>
-                {{ form.Delay }}
+                <label for="id_TimeOut" class="form-label">每页超时时间（秒）</label>
+                {{ form.TimeOut }}
+                {% for error in form.TimeOut.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary">开始爬取</button>
+
+            {% if form.non_field_errors %}
+            <div class="text-danger small mb-3">
+                {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">开始爬取</button>
+            </div>
         </form>
     </div>
 </div>

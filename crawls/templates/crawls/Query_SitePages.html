@@ -23,8 +23,8 @@
                 <td style="white-space: nowrap;">{{ page.crawl_time|date:"Y-m-d H:i:s" }}</td>
                 <td>
                     <div class="btn-group" role="group">
-                        <a href="{% url 'Query_PageContents' page.id %}" class="btn btn-sm btn-primary">查看内容</a>
-                        <a href="{% url 'Query_PageImages' page.id %}" class="btn btn-sm btn-secondary">查看图片</a>
+                        <a href="{% url 'Query_PageContents' page.url %}" class="btn btn-sm btn-primary">查看内容</a>
+                        <a href="{% url 'Query_PageImages' page.url %}" class="btn btn-sm btn-secondary">查看图片</a>
                     </div>
                 </td>
             </tr>

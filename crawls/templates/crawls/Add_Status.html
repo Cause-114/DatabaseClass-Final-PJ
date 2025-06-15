@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>爬取任务状态</h2>
+
+    <!-- 正在爬取 -->
+    <section>
+        <h3>正在爬取中</h3>
+        {% if running_tasks %}
+        <ul class="task-list">
+            {% for task in running_tasks %}
+            <li>
+                <strong>{{ task.website.domain }}</strong><br>
+                开始时间: {{ task.start_time|date:"Y-m-d H:i:s" }}<br>
+                状态: <span style="color: orange;">正在爬取</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>当前没有正在进行的爬取任务。</p>
+        {% endif %}
+    </section>
+
+    <!-- 已完成 -->
+    <section style="margin-top: 2em;">
+        <h3>已完成</h3>
+        {% if completed_tasks %}
+        <ul class="task-list">
+            {% for task in completed_tasks %}
+            <li>
+                <strong>{{ task.website.domain }}</strong><br>
+                开始时间: {{ task.start_time|date:"Y-m-d H:i:s" }}<br>
+                完成时间: {{ task.end_time|date:"Y-m-d H:i:s" }}<br>
+                状态: <span style="color: green;">已完成</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>暂无完成的任务。</p>
+        {% endif %}
+    </section>
+
+    <!-- 失败任务 -->
+    <section style="margin-top: 2em;">
+        <h3>失败的任务</h3>
+        {% if failed_tasks %}
+        <ul class="task-list">
+            {% for task in failed_tasks %}
+            <li>
+                <strong>{{ task.website.domain }}</strong><br>
+                开始时间: {{ task.start_time|date:"Y-m-d H:i:s" }}<br>
+                状态: <span style="color: red;">失败</span><br>
+                错误信息: {{ task.error_msg }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>暂无失败任务。</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

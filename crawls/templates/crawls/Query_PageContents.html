@@ -17,7 +17,11 @@
             <td>{{ content.content_id }}</td>
             <td>{{ content.get_type_display }}</td>
             <td>{{ content.keywords }}</td>
-            <td>{{ content.text|linebreaks|truncatechars:100}}</td>
+            <td>{{ content.text|truncatechars:100 }}
+                {% if content.text|length > 100 %}
+                <a href="{% url 'view_full_content' content.content_id %}" target="_blank">查看全文</a>
+                {% endif %}
+            </td>
         </tr>
         {% empty %}
         <tr>

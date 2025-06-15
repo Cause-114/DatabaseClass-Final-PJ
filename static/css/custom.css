@@ -67,3 +67,24 @@ body
     width: 36px;
     height: 36px;
 }
+.container
+{
+    max-width: 800px;
+    margin: auto;
+    padding: 1em;
+}
+
+.task-list
+{
+    list-style: none;
+    padding-left: 0;
+}
+
+.task-list li
+{
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
