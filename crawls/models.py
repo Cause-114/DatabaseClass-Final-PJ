@@ -1,15 +1,23 @@
 from django.db import models
+from django.contrib.auth.models import User  # 加入导入
 
 
 # 网站模型
 class Website(models.Model):
-    domain = models.CharField(max_length=255, primary_key=True)
+    id = models.AutoField(primary_key=True)  # 可省略，Django 默认就是这个
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="websites"
+    )  # 用户归属
+    domain = models.CharField(max_length=255)
     title = models.CharField(max_length=255, null=True, blank=True)  # 网站标题
     description = models.TextField(null=True, blank=True)  # 网站描述
     homepage = models.URLField(null=True, blank=True)  # 首页地址
 
+    class Meta:
+        unique_together = ("user", "domain")  # 每个用户下 domain 唯一
+
     def __str__(self):
-        return self.domain
+        return f"{self.domain} ({self.user.username})"
 
 
 class CrawlTask(models.Model):
@@ -27,6 +35,7 @@ class CrawlTask(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     error_msg = models.TextField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # ← 新增
 
     def __str__(self):
         return f"{self.website.domain} - {self.status} ({self.start_time})"
@@ -34,14 +43,18 @@ class CrawlTask(models.Model):
 
 # 网页模型
 class Webpage(models.Model):
-    url = models.CharField(max_length=500, primary_key=True)  # URL
+    id = models.AutoField(primary_key=True)
+    url = models.CharField(max_length=500)  # URL
     crawl_time = models.DateTimeField()  # 抓取时间
     website = models.ForeignKey(
         Website, related_name="webpages", on_delete=models.CASCADE
-    )  # 所属网站（外键）
+    )
+
+    class Meta:
+        unique_together = ("url", "website")
 
     def __str__(self):
-        return self.url
+        return f"{self.url}-{self.website.user.username}"
 
 
 # 内容模型

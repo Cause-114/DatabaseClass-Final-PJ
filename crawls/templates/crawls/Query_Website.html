@@ -15,7 +15,7 @@
         <tr>
             <td>{{ site.domain }}</td>
             <td>{{ site.page_count }}</td> 
-            <td><a href="{% url 'Query_SitePages' site.domain %} ">查看具体网页</a></td>
+            <td><a href="{% url 'Query_SitePages' site.id %} ">查看具体网页</a></td>
         </tr>
         {% endfor %}
     </tbody>

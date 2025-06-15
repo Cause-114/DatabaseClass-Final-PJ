@@ -18,7 +18,9 @@ class Downloader:
             encoding = cls.detect_encoding(response.content, response.headers)
 
             # 关键点：直接传 content 和 from_encoding 给 BeautifulSoup
-            soup = BeautifulSoup(response.content, "html.parser", from_encoding=encoding)
+            soup = BeautifulSoup(
+                response.content, "html.parser", from_encoding=encoding
+            )
             return (soup, response.url)
 
         except Exception as e:
@@ -32,25 +34,27 @@ class Downloader:
 
         # 1. 检查HTTP响应头中的编码声明
         if response_headers:
-            content_type = response_headers.get('Content-Type', '').lower()
-            if 'charset=' in content_type:
-                encoding = content_type.split('charset=')[-1].split(';')[0].strip()
+            content_type = response_headers.get("Content-Type", "").lower()
+            if "charset=" in content_type:
+                encoding = content_type.split("charset=")[-1].split(";")[0].strip()
 
         # 2. 检查HTML meta标签中的编码声明
         if not encoding:
             try:
                 # 使用BeautifulSoup查找meta标签
-                soup = BeautifulSoup(content[:4096], 'html.parser')  # 只分析前4KB
-                meta_tag = soup.find('meta', attrs={'charset': True})
+                soup = BeautifulSoup(content[:4096], "html.parser")  # 只分析前4KB
+                meta_tag = soup.find("meta", attrs={"charset": True})
                 if meta_tag:
-                    encoding = meta_tag['charset']
+                    encoding = meta_tag["charset"]
                 else:
                     # 查找http-equiv的meta标签
-                    meta_tag = soup.find('meta', attrs={'http-equiv': 'Content-Type'})
-                    if meta_tag and 'content' in meta_tag.attrs:
-                        content_meta = meta_tag['content'].lower()
-                        if 'charset=' in content_meta:
-                            encoding = content_meta.split('charset=')[-1].split(';')[0].strip()
+                    meta_tag = soup.find("meta", attrs={"http-equiv": "Content-Type"})
+                    if meta_tag and "content" in meta_tag.attrs:
+                        content_meta = meta_tag["content"].lower()
+                        if "charset=" in content_meta:
+                            encoding = (
+                                content_meta.split("charset=")[-1].split(";")[0].strip()
+                            )
             except Exception:
                 pass
         return encoding
