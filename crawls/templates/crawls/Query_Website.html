@@ -49,8 +49,8 @@
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
-                            <a href="{% url 'Delete_SitePage' site.id %}" class="btn btn-outline-primary">
-                                <i class="fas fa-file-alt me-1"></i>网页管理
+                            <a href="{% url 'Query_SitePages' site.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-file-alt me-1"></i>所含网页
                             </a>
                         </div>
                     </td>
@@ -62,7 +62,7 @@
     {% else %}
     <div class="alert alert-info text-center my-5">
         <i class="far fa-folder-open fa-2x d-block mb-3"></i>
-        暂无可删除的网站记录
+        暂无已成功爬取的网站记录
     </div>
     {% endif %}
 </div>

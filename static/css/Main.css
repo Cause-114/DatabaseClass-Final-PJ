@@ -54,6 +54,13 @@ header
     z-index: 100;
 }
 
+/* 导航链接默认样式 - 白色 */
+nav .nav-link
+{
+    color: white !important;
+}
+
+/* 当前活动链接样式 - 保持原有逻辑 */
 nav .nav-link.active
 {
     color: var(--accent-color) !important;
