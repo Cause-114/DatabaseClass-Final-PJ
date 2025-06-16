@@ -14,6 +14,7 @@ urlpatterns = [
     ####################### 查 ############################
     path("Query/KeySearch/", views.search_content_view, name="Query_KeywordSearch"),
     path("Query/Websites/", views.recent_websites, name="Query_Website"),
+    path("Query/Webpages/", views.recent_webpages, name="Query_Webpage"),
     path(
         "Query/<int:site_id>/pages/",
         views.website_webpages_view,

@@ -29,6 +29,7 @@ class Crawler:
         if self.task:
             self.task.start_time = timezone.now()
             self.task.save()
+
     def handle_fatal_error(self, error_msg):
         self.error_occurred = True
         self.error_message = error_msg
