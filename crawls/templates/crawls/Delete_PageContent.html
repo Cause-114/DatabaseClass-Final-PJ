@@ -1,48 +1,104 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>网页文本内容 - {{ webpage.url }}</h2>
-<p>
-    <a href="{% url 'Delete_SitePage' webpage.website.domain %}">
-        返回所属网站网页列表
-    </a>
-</p>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-align-left me-2 text-primary"></i>网页文本内容管理
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-link me-1"></i>{{ webpage.url|truncatechars:50 }}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'Delete_SitePage' webpage.website.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-trash-alt me-1"></i>返回删除视图
+            </a>
+        </div>
+    </div>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>类型</th>
-            <th>关键词</th>
-            <th>文本内容</th>
-            <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for content in contents %}
-        <tr>
-            <td>{{ content.content_id }}</td>
-            <td>{{ content.get_type_display }}</td>
-            <td>{{ content.keywords }}</td>
-            <td>
-                {{ content.text|truncatechars:100 }}
-                {% if content.text|length > 100 %}
-                    <a href="{% url 'view_full_content' content.content_id %}" target="_blank">查看全文</a>
-                {% endif %}
-            </td>
-            <td>
-                <form method="post" action="{% url 'Delete_ContentItem' content.content_id %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这条文本吗？此操作不可恢复！')">删除</button>
-                </form>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">暂无内容</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="pretty-thead-row">
+                            <th class="ps-4" style="width: 80px;">ID</th>
+                            <th style="width: 120px;">类型</th>
+                            <th style="width: 180px;">关键词</th>
+                            <th>文本内容</th>
+                            <th class="pe-4" style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for content in contents %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary">{{ content.content_id }}</td>
+                            <td>
+                                <span
+                                    class="badge bg-{% if content.type == 'T' %}info{% elif content.type == 'H' %}success{% else %}secondary{% endif %} bg-opacity-10 text-{% if content.type == 'T' %}info{% elif content.type == 'H' %}success{% else %}secondary{% endif %}">
+                                    {{ content.get_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 180px;" title="{{ content.keywords }}">
+                                    {% if content.keywords %}
+                                    {{ content.keywords }}
+                                    {% else %}
+                                    <span class="text-muted">无关键词</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-truncate" style="max-width: 300px;" title="{{ content.text }}">
+                                        {{ content.text|truncatechars:80 }}
+                                    </span>
+                                    {% if content.text|length > 80 %}
+                                    <a href="{% url 'view_full_content' content.content_id %}" target="_blank"
+                                        class="btn btn-sm btn-link text-decoration-none">
+                                        查看全文 <i class="fas fa-external-link-alt ms-1"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="pe-4">
+                                <form method="post" action="{% url 'Delete_ContentItem' content.content_id %}"
+                                    class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('⚠️ 警告：确定要永久删除这条内容吗？此操作不可撤销！')">
+                                        <i class="far fa-trash-alt me-1"></i>删除
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <div class="py-5 my-2 text-muted">
+                                    <i class="far fa-folder-open fa-2x mb-3"></i>
+                                    <p class="mb-0">暂无文本内容</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    .table-hover tbody tr:hover td {
+        background-color: transparent;
+    }
+</style>
 
 {% endblock %}

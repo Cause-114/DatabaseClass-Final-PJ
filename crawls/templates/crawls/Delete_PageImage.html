@@ -1,33 +1,84 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>网页图片 - {{ webpage.url }}</h2>
-<p>
-    <a href="{% url 'Delete_SitePage' webpage.website.domain %}">
-        返回所属网站网页列表
-    </a>
-</p>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-images me-2 text-primary"></i>网页图片管理
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-link me-1"></i>{{ webpage.url }}
+            </p>
+        </div>
+        <a href="{% url 'Delete_SitePage' webpage.website.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>返回所属网站管理
+        </a>
+    </div>
 
-<div class="row">
-    {% for img in images %}
-    <div class="col-md-3 mb-4">
-        <div class="card shadow-sm h-100">
-            <img src="{{ img.url.data_source_url|default:img.url }}" class="card-img-top" alt="{{ img.description }}">
-            <div class="card-body">
-                <p class="card-text">{{ img.description|default:"无描述" }}</p>
-                <p class="text-muted small">分辨率: {{ img.resolution|default:"未知" }}</p>
-                <form method="post" action="{% url 'Delete_ImageItem' img.url.data_source_url %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这张图片吗？此操作不可恢复！')">
-                        删除图片
-                    </button>
-                </form>
+    {% if images %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for img in images %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="position-relative" style="height: 200px; overflow: hidden;">
+                    <img src="{{ img.url.data_source_url }}" class="card-img-top img-fluid h-100 object-fit-cover"
+                        alt="{{ img.description }}" style="transition: transform 0.3s;"
+                        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="position-absolute top-0 start-0 bg-dark bg-opacity-75 text-white px-2 py-1">
+                        <small>#{{ forloop.counter }}</small>
+                    </div>
+                    <div class="position-absolute bottom-0 end-0 bg-dark bg-opacity-75 text-white px-2 py-1">
+                        {{ img.resolution }}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-truncate mb-2" title="{{ img.description }}">
+                        {% if img.description %}
+                        {{ img.description }}
+                        {% else %}
+                        <span class="text-muted">无描述</span>
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="far fa-image me-1"></i>{{ img.file_size|filesizeformat }}
+                        </small>
+                        <form method="post" action="{% url 'Delete_ImageItem' img.url.data_source_url %}"
+                            class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('⚠️ 警告：确定要永久删除这张图片吗？此操作不可撤销！')">
+                                <i class="far fa-trash-alt me-1"></i>删除
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p class="text-muted">暂无图片</p>
-    {% endfor %}
+    {% else %}
+    <div class="text-center py-5 my-5 bg-light rounded-3">
+        <i class="far fa-folder-open fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">暂无图片</h4>
+        <p class="text-muted">此网页尚未采集到任何图片</p>
+    </div>
+    {% endif %}
 </div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+</style>
 
 {% endblock %}

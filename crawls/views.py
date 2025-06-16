@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib import messages
+from django.contrib import messages
+from django.contrib.auth.models import User
 
 
 from .Crawler import Crawler
@@ -99,29 +101,40 @@ def user_input_view(request):
     return render(request, "crawls/Add_Input.html", {"form": form})
 
 ####################### 删 ############################
+@login_required
 def website_delete_list_view(request):
-    websites = (
-        Website.objects.annotate(page_count=Count("webpages", distinct=True))
-        .order_by("-domain")
-    )
+    if request.user.is_superuser:
+        websites = (
+            Website.objects.filter(crawl_tasks__status="complete")
+            .distinct()
+            .annotate(page_count=Count("webpages", distinct=True))
+            .order_by("-domain")
+        )
+    else:
+        websites = (
+            Website.objects.filter(crawl_tasks__status="complete", user=request.user)
+            .distinct()
+            .annotate(page_count=Count("webpages", distinct=True))
+            .order_by("-domain")
+        )
     return render(request, "crawls/Delete_List.html", {"websites": websites})
 
 
-def delete_webstie_view(request, domain):
+def delete_webstie_view(request, id):
     if request.method == "POST":
         try:
-            website = get_object_or_404(Website, domain=domain)
+            website = get_object_or_404(Website, id=id)
             Webpage.objects.filter(website=website).delete()
             website.delete()
-            messages.success(request, f"网站 {domain} 已成功删除。")
+            messages.success(request, f"网站 {id} 已成功删除。")
         except Exception as e:
             messages.error(request, f"删除失败: {e}")
         return redirect('Delete_List')
     return redirect('Delete_List')
 
-
-def delete_site_page_view(request, domain):
-    website = get_object_or_404(Website, domain=domain)
+@login_required
+def delete_site_page_view(request, id):
+    website = get_object_or_404(Website, id=id)
     pages = Webpage.objects.filter(website=website).order_by("-crawl_time")
     return render(request, "crawls/Delete_SitePage.html", {
         "website": website,
@@ -132,17 +145,17 @@ def delete_site_page_view(request, domain):
 def delete_webpage_view(request, webpage_id):
     webpage = get_object_or_404(Webpage, id=webpage_id)
     if request.method == "POST":
-        domain = webpage.website.domain
+        id = webpage.website.id
         Content.objects.filter(webpage=webpage).delete()
         Image.objects.filter(webpage=webpage).delete()
         webpage.delete()
         messages.success(request, "该网页及相关内容已成功删除")
-        return redirect("Delete_SitePage", domain=domain)
+        return redirect("Delete_SitePage", id=id)
     return redirect("Delete_List")
 
 
-
 # 显示网页的所有文本内容
+@login_required
 def delete_page_content_view(request, content_id):
     content = get_object_or_404(Content, content_id=content_id)
     webpage = content.webpage
@@ -163,8 +176,6 @@ def view_webpage_contents(request, webpage_id):
     })
 
 
-
-
 # 删除单个文本内容后返回该网页内容列表
 def delete_content_view(request, content_id):
     content = get_object_or_404(Content, content_id=content_id)
@@ -176,6 +187,7 @@ def delete_content_view(request, content_id):
 
 
 # 显示网页的所有图片
+@login_required
 def delete_page_image_view(request, url):
     data_source = get_object_or_404(DataSource, data_source_url=url)
     image = get_object_or_404(Image, url=data_source)
@@ -186,8 +198,6 @@ def delete_page_image_view(request, url):
         "webpage": webpage,
         "images": images,
     })
-
-
 
 
 # 删除单张图片后返回该网页图片列表
@@ -201,6 +211,8 @@ def delete_image_view(request, url):
         messages.success(request, "该图片已成功删除。")
     return redirect("Delete_PageImage", webpage_id=webpage_id)
 
+
+@login_required
 def view_webpage_images(request, webpage_id):
     webpage = get_object_or_404(Webpage, id=webpage_id)
     images = Image.objects.filter(webpage=webpage)
@@ -357,14 +369,12 @@ def view_full_content(request, content_id):
 
 #####################用户###########################
 def register_view(request):
+    form = UserCreationForm(request.POST or None)
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # 注册后自动登录
+            login(request, user)
             return redirect("Main")
-    else:
-        form = UserCreationForm()
     return render(request, "crawls/User_register.html", {"form": form})
 
 

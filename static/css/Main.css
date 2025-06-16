@@ -54,7 +54,7 @@ header
     z-index: 100;
 }
 
-nav .nav-links a.active
+nav .nav-link.active
 {
     color: var(--accent-color) !important;
     font-weight: bold;

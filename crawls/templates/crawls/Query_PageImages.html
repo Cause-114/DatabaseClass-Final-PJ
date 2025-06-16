@@ -1,20 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>网页图片 - {{ webpage.url }}</h2>
-<p><a href="{% url 'Query_SitePages' webpage.website.id %}" class="btn btn-sm btn-outline-secondary mb-3">返回所属网站网页列表</a></p>
-<div class="row">
-    {% for img in images %}
-    <div class="col-md-3 mb-3">
-        <div class="card">
-            <img src="{{ img.url.data_source_url }}" class="card-img-top" alt="{{ img.description }}">
-            <div class="card-body">
-                <p class="card-text">{{ img.description }}</p>
-                <small>分辨率: {{ img.resolution }}</small>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-images me-2"></i>网页图片 - {{ webpage.url }}
+        </h2>
+        <a href="{% url 'Query_SitePages' webpage.website.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>返回所属网站
+        </a>
+    </div>
+
+    {% if images %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for img in images %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="position-relative" style="height: 200px; overflow: hidden;">
+                    <img src="{{ img.url.data_source_url }}" class="card-img-top img-fluid h-100 object-fit-cover"
+                        alt="{{ img.description }}" style="transition: transform 0.3s;"
+                        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="position-absolute bottom-0 end-0 bg-dark bg-opacity-75 text-white px-2 py-1">
+                        {{ img.resolution }}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-truncate" title="{{ img.description }}">{{ img.description }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <small class="text-muted">
+                        <i class="far fa-image me-1"></i>图片 {{ forloop.counter }}
+                    </small>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p>暂无图片</p>
-    {% endfor %}
+    {% else %}
+    <div class="text-center py-5 my-5 bg-light rounded">
+        <i class="far fa-folder-open fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">暂无图片</h4>
+        <p class="text-muted">此网页尚未采集到任何图片</p>
+    </div>
+    {% endif %}
 </div>
+
 {% endblock %}

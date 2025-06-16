@@ -1,37 +1,106 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="mb-4">删除网站</h2>
 
-{% if websites %}
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>域名</th>
-                <th>对应网页数目</th>
-                <th>详情</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for site in websites %}
-                <tr>
-                    <td>{{ site.domain }}</td>
-                    <td>{{ site.page_count }}</td>
-                    <td><a href="{% url 'Delete_SitePage' site.domain %}"  class="btn btn-sm btn-outline-primary">查看网页</a></td>
-                    <td>
-                        <form method="post" action="{% url 'Delete_Website' site.domain %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这个网站吗？此操作不可恢复！')">删除网站</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <div class="alert alert-info">暂无可删除的网站记录。</div>
-{% endif %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-trash-alt me-2 text-danger"></i>网站管理
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-info-circle me-1"></i>您可以在此删除不再需要的网站及其所有数据
+            </p>
+        </div>
+        <div>
+            <span class="badge bg-danger bg-opacity-10 text-danger">
+                <i class="fas fa-database me-1"></i>共 {{ websites|length }} 个网站
+            </span>
+        </div>
+    </div>
+
+    {% if websites %}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="pretty-thead-row">
+                            <th class="ps-4">创建用户</th>
+                            <th>域名</th>
+                            <th class="text-center">网页数目</th>
+                            <th>详情</th>
+                            <th class="pe-4">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for site in websites %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle me-2 text-muted"></i>
+                                    <span>{{ site.user.username }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-globe me-2 text-muted"></i>
+                                    <a href="http://{{ site.domain }}" target="_blank" class="text-decoration-none">
+                                        {{ site.domain }}
+                                        <i class="fas fa-external-link-alt ms-1 text-muted"
+                                            style="font-size: 0.8em;"></i>
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                    {{ site.page_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'Delete_SitePage' site.id %}" class="btn btn-sm btn-outline-primary"
+                                    title="查看该网站下的所有网页">
+                                    <i class="fas fa-file-alt me-1"></i>管理网页
+                                </a>
+                            </td>
+                            <td class="pe-4">
+                                <form method="post" action="{% url 'Delete_Website' site.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('⚠️ 警告：确定要永久删除整个网站及其所有网页、图片和内容吗？此操作不可撤销！')">
+                                        <i class="far fa-trash-alt me-1"></i>删除网站
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 my-5 bg-light rounded-3">
+        <i class="far fa-folder-open fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">暂无可删除的网站</h4>
+        <p class="text-muted">当前没有已注册的网站记录</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .table-hover tbody tr:hover td {
+        background-color: transparent;
+    }
+
+    .table td,
+    .table th {
+        vertical-align: middle;
+    }
+</style>
 
 {% endblock %}
-

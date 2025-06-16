@@ -1,36 +1,83 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="table-responsive">
-    <table class="table table-hover table-bordered align-middle">
-        <thead class="text-center">
-            <tr class="pretty-thead-row">
-                <th style="white-space: nowrap;">创建用户</th>
-                <th style="width: 30%">域名</th>
-                <th style="width: 30%">标题</th>
-                <th style="white-space: nowrap;">网页数目</th>
-                <th style="width: 160px;">操作</th>
-            </tr>
-        </thead>
 
-        <tbody>
-            {% for site in websites %}
-            <tr>
-                <td class="text-center">{{ site.user.username }}</td>
-                <td class="text-truncate" title="{{ site.domain }}">{{ site.domain }}</td>
-                <td class="text-truncate" title="{{ site.title }}">{{ site.title }}</td>
-                <td class="text-center">{{ site.page_count }}</td>
-                <td class="text-center">
-                    <a href="{% url 'Query_SitePages' site.id %}" class="btn btn-sm btn-outline-primary">
-                        查看网页
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-3">
+                <i class="fas fa-globe me-2 text-primary"></i> 网站列表
+            </h2>
+            <p class="text-primary mb-4">
+                <i class="fas fa-info-circle me-1"></i>此处可查看已成功爬取的网站
+            </p>
+        </div>
+        <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary">
+                <i class="fas fa-database me-1"></i>共 {{ websites|length }} 个网站
+            </span>
+        </div>
+    </div>
+
+    {% if websites %}
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle text-center">
+            <thead class="table-light">
+                <tr class="pretty-thead-row">
+                    <th>创建用户</th>
+                    <th>域名</th>
+                    <th>标题</th>
+                    <th>网页数</th>
+                    <th style="width: 220px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for site in websites %}
+                <tr>
+                    <td>{{ site.user.username }}</td>
+                    <td class="text-truncate" title="{{ site.domain }}">
+                        <a href="http://{{ site.domain }}" target="_blank" class="text-decoration-none">
+                            {{ site.domain }}
+                            <i class="fas fa-external-link-alt ms-1 text-muted" style="font-size: 0.8em;"></i>
+                        </a>
+                    </td>
+                    <td class="text-truncate" title="{{ site.title }}">{{ site.title }}</td>
+                    <td>
+                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                            {{ site.page_count }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'Delete_SitePage' site.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-file-alt me-1"></i>网页管理
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center my-5">
+        <i class="far fa-folder-open fa-2x d-block mb-3"></i>
+        暂无可删除的网站记录
+    </div>
+    {% endif %}
 </div>
 
-{% if websites|length == 0 %}
-<div class="alert alert-info text-center">暂无爬取成功的网站记录。</div>
-{% endif %}
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .text-truncate {
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
 {% endblock %}

@@ -1,46 +1,115 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>网站 {{ website.domain }} 的所有网页</h2>
-<p><a href="{% url 'Delete_List' %}">返回已爬取网站列表</a></p>
 
-<div class="table-responsive">
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th style="width: 50%">URL</th>
-                <th style="white-space: nowrap;">爬取时间</th>
-                <th style="width: 200px;">查看</th>
-                <th style="width: 200px;">操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for page in pages %}
-            <tr>
-                <td>
-                    <div class="text-truncate" style="max-width: 100%;">
-                        <span title="{{ page.url }}">{{ page.url|truncatechars:50 }}</span>
-                    </div>
-                </td>
-                <td style="white-space: nowrap;">{{ page.crawl_time|date:"Y-m-d H:i:s" }}</td>
-                <td>
-                    <div class="btn-group" role="group">
-                        <a href="{% url 'Delete_PageContent' page.id %}" class="btn btn-sm btn-outline-primary">查看内容</a>
-                        <a href="{% url 'Delete_PageImage' page.id %}" class="btn btn-sm btn-outline-secondary">查看图片</a>
-                    </div>
-                </td>
-                <td>
-                    <form method="post" action="{% url 'Delete_Webpage' page.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这个网页吗？此操作不可恢复！')">删除网页</button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3">暂无数据</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-globe me-2 text-primary"></i>网站网页管理
+            </h2>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-primary bg-opacity-10 text-primary me-2">
+                    <i class="fas fa-link me-1"></i>{{ website.domain }}
+                </span>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                    <i class="fas fa-file-alt me-1"></i>共 {{ pages|length }} 个网页
+                </span>
+            </div>
+        </div>
+        <a href="{% url 'Delete_List' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>返回网站管理列表
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="pretty-thead-row">
+                            <th class="ps-4">网页URL</th>
+                            <th style="width: 160px;">爬取时间</th>
+                            <th style="width: 240px;">内容查看</th>
+                            <th class="pe-4" style="width: 140px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page in pages %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-alt text-muted me-2"></i>
+                                    <div class="text-truncate" style="max-width: 500px;" title="{{ page.url }}">
+                                        <a href="{{ page.url }}" target="_blank" class="text-decoration-none"
+                                            title="在新窗口打开">
+                                            {{ page.url }}
+                                            <i class="fas fa-external-link-alt ms-1 text-muted"
+                                                style="font-size: 0.8em;"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="far fa-clock me-1"></i>
+                                    {{ page.crawl_time|date:"Y-m-d H:i" }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'Delete_PageContent' page.id %}" class="btn btn-outline-primary"
+                                        title="查看文本内容">
+                                        <i class="fas fa-align-left me-1"></i>内容
+                                    </a>
+                                    <a href="{% url 'Delete_PageImage' page.id %}" class="btn btn-outline-success"
+                                        title="查看图片资源">
+                                        <i class="far fa-image me-1"></i>图片
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="pe-4">
+                                <form method="post" action="{% url 'Delete_Webpage' page.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('⚠️ 警告：确定要永久删除此网页及其所有内容吗？此操作不可撤销！')">
+                                        <i class="far fa-trash-alt me-1"></i>删除
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                <div class="py-5 my-2 text-muted">
+                                    <i class="far fa-folder-open fa-2x mb-3"></i>
+                                    <p class="mb-0">该网站暂无爬取网页</p>
+                                    <small class="text-muted">请先执行爬取操作</small>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    .table-hover tbody tr:hover td {
+        background-color: transparent;
+    }
+
+    .text-truncate {
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
 {% endblock %}
