@@ -29,7 +29,7 @@
                     <li><a href="{% url 'Query_KeywordSearch' %}">数据查询</a></li>
                     <li><a href="/admin/">后台管理</a></li>
                 </ul>
-                <div class="user-profile">
+                <ul class="nav-links">
                     {% if user.is_authenticated %}
                     <span>你好，{{ user.username }}</span> |
                     <form method="post" action="{% url 'logout' %}" style="display:inline;">
@@ -37,10 +37,10 @@
                         <button type="submit" class="btn btn-link">登出</button>
                     </form>
                     {% else %}
-                    <a href="{% url 'login' %}">登录</a> |
-                    <a href="{% url 'register' %}">注册</a>
+                    <li><a href="{% url 'login' %}">登录</a></li>
+                    <li><a href="{% url 'register' %}">注册</a></li>
                     {% endif %}
-                </div>
+                </ul>
             </nav>
         </div>
     </header>
