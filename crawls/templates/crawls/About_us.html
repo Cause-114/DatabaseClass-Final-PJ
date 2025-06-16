@@ -22,10 +22,9 @@
                     <span>DataSpider</span>
                 </div>
                 <ul class="nav-links">
-                    <li><a href="{% url 'Main' %}" class="active">首页</a></li>
-                    <!-- <li><a href="#">功能</a></li> -->
-                    <li><a href="#">帮助中心</a></li>
-                    <li><a href="{% url 'About_us' %}">关于我们</a></li>
+                    <li><a href="{% url 'Main' %}" class="{% if request.path == '/' %}active{% endif %}">首页</a></li>
+                    <li><a href="#" class="{% if request.path == '#' %}active{% endif %}">帮助中心</a></li>
+                    <li><a href="{% url 'About_us' %}" class="{% if request.path == '/About/us/' %}active{% endif %}">关于我们</a></li>
                 </ul>
                 <div class="user-profile">
                     {% if user.is_authenticated %}
@@ -218,8 +217,8 @@
 
     <footer>
         <div class="container">
-            <div class="copyright">
-                &copy; © 2024~2025春 复旦大学大数据学院 数据库及实现 Group 4 - DataSpider。
+            <div class="copyright" style="text-align: center">
+                &copy; 2024~2025春 复旦大学大数据学院 数据库及实现 Group 4 - DataSpider。
             </div>
         </div>
     </footer>

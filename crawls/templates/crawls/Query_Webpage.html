@@ -2,13 +2,13 @@
 {% block content %}
 <div class="table-responsive">
     <table class="table table-striped align-middle">
-        <thead>
-            <tr>
+        <thead class="text-center">
+            <tr class="pretty-thead-row">
                 <th style="width: 50%">URL</th>
                 <th style="white-space: nowrap;">爬取时间</th>
                 <th style="width: 200px;">操作</th>
             </tr>
-        </thead>
+        </thead>        
         <tbody>
             {% for page in webpages %}
             <tr>
@@ -20,8 +20,12 @@
                 <td style="white-space: nowrap;">{{ page.crawl_time|date:"Y-m-d H:i:s" }}</td>
                 <td>
                     <div class="btn-group" role="group">
-                        <a href="{% url 'Query_PageContents' page.id %}" class="btn btn-sm btn-primary">查看内容</a>
-                        <a href="{% url 'Query_PageImages' page.id %}" class="btn btn-sm btn-secondary">查看图片</a>
+                        <a href="{% url 'Query_PageContents' page.id %}" class="btn btn-sm btn-outline-primary">
+                            查看内容
+                        </a>
+                        <a href="{% url 'Query_PageImages' page.id %}" class="btn btn-sm btn-outline-secondary">
+                            查看图片
+                        </a>
                     </div>
                 </td>
             </tr>

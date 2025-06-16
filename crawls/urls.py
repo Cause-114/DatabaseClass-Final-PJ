@@ -8,7 +8,7 @@ urlpatterns = [
     path("", views.main_view, name="Main"),
     ####################### 增 ############################
     path("Add/", views.user_input_view, name="Add_Input"),
-    path("Add/Tasks", views.crawl_task_status_view, name="Add_Status"),
+    path("Add/Tasks/", views.crawl_task_status_view, name="Add_Status"),
     ####################### 删 ############################
     ####################### 改 ############################
     ####################### 查 ############################

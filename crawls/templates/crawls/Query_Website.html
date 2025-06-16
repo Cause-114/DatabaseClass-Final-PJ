@@ -1,27 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="mb-4">最近成功爬取的网站</h2>
+<div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle">
+        <thead class="text-center">
+            <tr class="pretty-thead-row">
+                <th style="white-space: nowrap;">创建用户</th>
+                <th style="width: 30%">域名</th>
+                <th style="width: 30%">标题</th>
+                <th style="white-space: nowrap;">网页数目</th>
+                <th style="width: 160px;">操作</th>
+            </tr>
+        </thead>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>域名</th>
-            <th>对应网页数目</th>
-            <th>查看详情</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for site in websites %}
-        <tr>
-            <td>{{ site.domain }}</td>
-            <td>{{ site.page_count }}</td> 
-            <td><a href="{% url 'Query_SitePages' site.id %} ">查看具体网页</a></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <tbody>
+            {% for site in websites %}
+            <tr>
+                <td class="text-center">{{ site.user.username }}</td>
+                <td class="text-truncate" title="{{ site.domain }}">{{ site.domain }}</td>
+                <td class="text-truncate" title="{{ site.title }}">{{ site.title }}</td>
+                <td class="text-center">{{ site.page_count }}</td>
+                <td class="text-center">
+                    <a href="{% url 'Query_SitePages' site.id %}" class="btn btn-sm btn-outline-primary">
+                        查看网页
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 {% if websites|length == 0 %}
-<div class="alert alert-info">暂无爬取成功的网站记录。</div>
+<div class="alert alert-info text-center">暂无爬取成功的网站记录。</div>
 {% endif %}
 {% endblock %}

@@ -75,7 +75,7 @@ def run_crawler_async(base_url, max_page, timeout, task_id):
     crawler = Crawler(base_url, task_id=task_id)
     crawler.crawl(max_page, timeout)
 
-
+@login_required
 def user_input_view(request):
     if request.method == "POST":
         form = UserInputForm(request.POST)
