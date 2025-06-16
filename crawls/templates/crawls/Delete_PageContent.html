@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>网页文本内容 - {{ webpage.url }}</h2>
+<p>
+    <a href="{% url 'Delete_SitePage' webpage.website.domain %}">
+        返回所属网站网页列表
+    </a>
+</p>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>类型</th>
+            <th>关键词</th>
+            <th>文本内容</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for content in contents %}
+        <tr>
+            <td>{{ content.content_id }}</td>
+            <td>{{ content.get_type_display }}</td>
+            <td>{{ content.keywords }}</td>
+            <td>
+                {{ content.text|truncatechars:100 }}
+                {% if content.text|length > 100 %}
+                    <a href="{% url 'view_full_content' content.content_id %}" target="_blank">查看全文</a>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post" action="{% url 'Delete_ContentItem' content.content_id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这条文本吗？此操作不可恢复！')">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">暂无内容</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

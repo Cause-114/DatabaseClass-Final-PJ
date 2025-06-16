@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">删除网站</h2>
+
+{% if websites %}
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>域名</th>
+                <th>对应网页数目</th>
+                <th>详情</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for site in websites %}
+                <tr>
+                    <td>{{ site.domain }}</td>
+                    <td>{{ site.page_count }}</td>
+                    <td><a href="{% url 'Delete_SitePage' site.domain %}"  class="btn btn-sm btn-outline-primary">查看网页</a></td>
+                    <td>
+                        <form method="post" action="{% url 'Delete_Website' site.domain %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这个网站吗？此操作不可恢复！')">删除网站</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-info">暂无可删除的网站记录。</div>
+{% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>网页图片 - {{ webpage.url }}</h2>
+<p>
+    <a href="{% url 'Delete_SitePage' webpage.website.domain %}">
+        返回所属网站网页列表
+    </a>
+</p>
+
+<div class="row">
+    {% for img in images %}
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm h-100">
+            <img src="{{ img.url.data_source_url|default:img.url }}" class="card-img-top" alt="{{ img.description }}">
+            <div class="card-body">
+                <p class="card-text">{{ img.description|default:"无描述" }}</p>
+                <p class="text-muted small">分辨率: {{ img.resolution|default:"未知" }}</p>
+                <form method="post" action="{% url 'Delete_ImageItem' img.url.data_source_url %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这张图片吗？此操作不可恢复！')">
+                        删除图片
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">暂无图片</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -10,6 +10,14 @@ urlpatterns = [
     path("Add/", views.user_input_view, name="Add_Input"),
     path("Add/Tasks/", views.crawl_task_status_view, name="Add_Status"),
     ####################### 删 ############################
+    path("Delete/", views.website_delete_list_view, name="Delete_List"),
+    path("Delete/Website/<str:domain>/", views.delete_webstie_view, name="Delete_Website"),
+    path("Delete/SitePages/<str:domain>/", views.delete_site_page_view, name="Delete_SitePage"),
+    path("Delete/Webpage/Delete/<int:webpage_id>/", views.delete_webpage_view, name="Delete_Webpage"),
+    path("Delete/Webpage/<int:webpage_id>/Contents/", views.view_webpage_contents, name="Delete_PageContent"),
+    path("Delete/Webpage/Content/Delete/<int:content_id>/", views.delete_content_view, name="Delete_ContentItem"),
+    path("Delete/Webpage/Image/Delete/<path:url>/", views.delete_image_view, name="Delete_ImageItem"),
+    path("Delete/Webpage/Images/<int:webpage_id>/", views.view_webpage_images, name="Delete_PageImage"),
     ####################### 改 ############################
     ####################### 查 ############################
     path("Query/KeySearch/", views.search_content_view, name="Query_KeywordSearch"),
