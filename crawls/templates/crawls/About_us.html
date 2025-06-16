@@ -21,17 +21,17 @@
                     <i class="fas fa-spider"></i>
                     <span>DataSpider</span>
                 </div>
-                <ul class="nav-links">
+                <div class="nav-links">
                     <li><a href="{% url 'Main' %}" class="{% if request.path == '/' %}active{% endif %}">首页</a></li>
                     <li><a href="#" class="{% if request.path == '#' %}active{% endif %}">帮助中心</a></li>
                     <li><a href="{% url 'About_us' %}" class="{% if request.path == '/About/us/' %}active{% endif %}">关于我们</a></li>
-                </ul>
+                </div>
                 <div class="user-profile">
                     {% if user.is_authenticated %}
                     <span>你好，{{ user.username }}</span> |
                     <form method="post" action="{% url 'logout' %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-link">登出</button>
+                        <button type="submit" style="font: inherit; border:0; background:none; cursor:pointer; text-decoration:underline; padding:0; color:inherit;">登出</button>
                     </form>
                     {% else %}
                     <a href="{% url 'login' %}">登录</a> |

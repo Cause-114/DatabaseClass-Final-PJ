@@ -22,7 +22,7 @@
                     <i class="fas fa-spider"></i>
                     <span>DataSpider</span>
                 </div>
-                <ul class="nav-links">
+                <div class="nav-links">
                     <li><a href="{% url 'Main' %}" class="{% if request.path == '/' %}active{% endif %}">首页</a></li>
                     <li><a href="{% url 'Add_Input' %}"
                             class="{% if request.path == '/Add/' %}active{% endif %}">新建任务</a></li>
@@ -37,19 +37,19 @@
                     <li><a href="{% url 'Delete_List' %}"
                             class="{% if request.path == '/Delete/' %}active{% endif %}">删除内容</a></li>        
                     <li><a href="/admin/">后台管理</a></li>
-                </ul>
-                <ul class="nav-links">
+                    </div>
+                <div class="nav-links">
                     {% if user.is_authenticated %}
                     <span>你好，{{ user.username }}</span> |
                     <form method="post" action="{% url 'logout' %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-link">登出</button>
+                        <button type="submit" style="font: inherit; border:0; background:none; cursor:pointer; text-decoration:underline; padding:0; color:inherit;">登出</button>
                     </form>
                     {% else %}
                     <li><a href="{% url 'login' %}">登录</a></li>
                     <li><a href="{% url 'register' %}">注册</a></li>
                     {% endif %}
-                </ul>
+                </div>
             </nav>
         </div>
     </header>
