@@ -1,11 +1,12 @@
 import threading
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote, quote
 from django.shortcuts import render, get_object_or_404, redirect
 from django import forms
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+from django.contrib import messages
 
 
 from .Crawler import Crawler
@@ -98,6 +99,115 @@ def user_input_view(request):
     return render(request, "crawls/Add_Input.html", {"form": form})
 
 ####################### 删 ############################
+def website_delete_list_view(request):
+    websites = (
+        Website.objects.annotate(page_count=Count("webpages", distinct=True))
+        .order_by("-domain")
+    )
+    return render(request, "crawls/Delete_List.html", {"websites": websites})
+
+
+def delete_webstie_view(request, domain):
+    if request.method == "POST":
+        try:
+            website = get_object_or_404(Website, domain=domain)
+            Webpage.objects.filter(website=website).delete()
+            website.delete()
+            messages.success(request, f"网站 {domain} 已成功删除。")
+        except Exception as e:
+            messages.error(request, f"删除失败: {e}")
+        return redirect('Delete_List')
+    return redirect('Delete_List')
+
+
+def delete_site_page_view(request, domain):
+    website = get_object_or_404(Website, domain=domain)
+    pages = Webpage.objects.filter(website=website).order_by("-crawl_time")
+    return render(request, "crawls/Delete_SitePage.html", {
+        "website": website,
+        "pages": pages
+    })
+
+
+def delete_webpage_view(request, webpage_id):
+    webpage = get_object_or_404(Webpage, id=webpage_id)
+    if request.method == "POST":
+        domain = webpage.website.domain
+        Content.objects.filter(webpage=webpage).delete()
+        Image.objects.filter(webpage=webpage).delete()
+        webpage.delete()
+        messages.success(request, "该网页及相关内容已成功删除")
+        return redirect("Delete_SitePage", domain=domain)
+    return redirect("Delete_List")
+
+
+
+# 显示网页的所有文本内容
+def delete_page_content_view(request, content_id):
+    content = get_object_or_404(Content, content_id=content_id)
+    webpage = content.webpage
+    contents = Content.objects.filter(webpage=webpage)
+
+    return render(request, "crawls/Delete_PageContent.html", {
+        "webpage": webpage,
+        "contents": contents,
+    })
+
+def view_webpage_contents(request, webpage_id):
+    webpage = get_object_or_404(Webpage, id=webpage_id)
+    contents = Content.objects.filter(webpage=webpage)
+
+    return render(request, "crawls/Delete_PageContent.html", {
+        "webpage": webpage,
+        "contents": contents,
+    })
+
+
+
+
+# 删除单个文本内容后返回该网页内容列表
+def delete_content_view(request, content_id):
+    content = get_object_or_404(Content, content_id=content_id)
+    webpage_id = content.webpage.id
+    if request.method == "POST":
+        content.delete()
+        messages.success(request, "该文本内容已成功删除。")
+    return redirect("Delete_PageContent", webpage_id=webpage_id)
+
+
+# 显示网页的所有图片
+def delete_page_image_view(request, url):
+    data_source = get_object_or_404(DataSource, data_source_url=url)
+    image = get_object_or_404(Image, url=data_source)
+    webpage = image.webpage
+    images = Image.objects.filter(webpage=webpage)
+
+    return render(request, "crawls/Delete_PageImage.html", {
+        "webpage": webpage,
+        "images": images,
+    })
+
+
+
+
+# 删除单张图片后返回该网页图片列表
+def delete_image_view(request, url):
+    url = unquote(url)
+    data_source = get_object_or_404(DataSource, data_source_url=url)
+    image = get_object_or_404(Image, url=data_source)
+    webpage_id = image.webpage.id
+    if request.method == "POST":
+        image.delete()
+        messages.success(request, "该图片已成功删除。")
+    return redirect("Delete_PageImage", webpage_id=webpage_id)
+
+def view_webpage_images(request, webpage_id):
+    webpage = get_object_or_404(Webpage, id=webpage_id)
+    images = Image.objects.filter(webpage=webpage)
+    return render(request, "crawls/Delete_PageImage.html", {
+        "webpage": webpage,
+        "images": images,
+    })
 
 
 ####################### 查 ############################

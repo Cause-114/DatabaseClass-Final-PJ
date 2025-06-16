@@ -34,6 +34,8 @@
                             class="{% if request.path == '/Query/Websites/' %}active{% endif %}">网站一览</a></li>
                     <li><a href="{% url 'Query_Webpage' %}"
                             class="{% if request.path == '/Query/Webpages/' %}active{% endif %}">网页一览</a></li>
+                    <li><a href="{% url 'Delete_List' %}"
+                            class="{% if request.path == '/Delete/' %}active{% endif %}">删除内容</a></li>        
                     <li><a href="/admin/">后台管理</a></li>
                 </ul>
                 <ul class="nav-links">
