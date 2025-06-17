@@ -55,9 +55,9 @@ class Saver:
             for para in paragraphs:
                 if para:
                     # 提取每段top1关键词
-                    keywords = jieba.analyse.extract_tags(para, topK=1)
+                    keywords = jieba.analyse.extract_tags(para, topK=5)
                     if keywords:
-                        paragraph_keywords.append(keywords[0])
+                        paragraph_keywords.extend(keywords)
 
             # 合并所有关键词
             keywords_str = ",".join(set(paragraph_keywords))  # 去重处理
