@@ -63,7 +63,7 @@ class Crawler:
 
                 count += 1
                 logging.info(f"[{count}/{max_pages}] Crawling: {url}")
-                Saver.save(self.domain, normalized_url, soup)
+                Saver.save(self.website.id, normalized_url, soup)
                 if count == 1:
                     self.extract_website_info(soup)  # 抽取站点信息
                 # if(len(self.queue)<max_pages-count):

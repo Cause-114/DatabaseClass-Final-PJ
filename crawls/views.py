@@ -8,7 +8,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib import messages
-from django.contrib.auth.models import User
 
 
 from .Crawler import Crawler
@@ -19,7 +18,6 @@ from .models import (
     Content,
     Image,
     DataSource,
-    DataSourceContent,
 )
 
 
@@ -124,6 +122,11 @@ def delete_webstie_view(request, id):
     if request.method == "POST":
         try:
             website = get_object_or_404(Website, id=id)
+            webpages = Webpage.objects.filter(website=website)
+            for webpage in webpages: 
+                DataSource.objects.filter(data_source_url=webpage.url).delete()  
+                image_urls = Image.objects.filter(webpage=webpage).values_list('url', flat=True)
+                DataSource.objects.filter(data_source_url__in=image_urls).delete()
             Webpage.objects.filter(website=website).delete()
             website.delete()
             messages.success(request, f"网站 {id} 已成功删除。")
@@ -144,8 +147,13 @@ def delete_site_page_view(request, id):
 
 def delete_webpage_view(request, webpage_id):
     webpage = get_object_or_404(Webpage, id=webpage_id)
+
     if request.method == "POST":
         id = webpage.website.id
+        ds=get_object_or_404(DataSource, data_source_url=webpage.url)
+        ds.delete()
+        image_urls = Image.objects.filter(webpage=webpage).values_list('url', flat=True)
+        DataSource.objects.filter(data_source_url__in=image_urls).delete()
         Content.objects.filter(webpage=webpage).delete()
         Image.objects.filter(webpage=webpage).delete()
         webpage.delete()
@@ -180,8 +188,10 @@ def view_webpage_contents(request, webpage_id):
 def delete_content_view(request, content_id):
     content = get_object_or_404(Content, content_id=content_id)
     webpage_id = content.webpage.id
+    ds=get_object_or_404(DataSource, data_source_url=content.webpage.url)
     if request.method == "POST":
         content.delete()
+        ds.delete() 
         messages.success(request, "该文本内容已成功删除。")
     return redirect("Delete_PageContent", webpage_id=webpage_id)
 
@@ -208,6 +218,7 @@ def delete_image_view(request, url):
     webpage_id = image.webpage.id
     if request.method == "POST":
         image.delete()
+        data_source.delete()
         messages.success(request, "该图片已成功删除。")
     return redirect("Delete_PageImage", webpage_id=webpage_id)
 

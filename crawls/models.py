@@ -100,18 +100,3 @@ class Image(models.Model):
     def __str__(self):
         return self.url.data_source_url
 
-
-# 数据源与内容的中间表
-class DataSourceContent(models.Model):
-    data_source = models.ForeignKey(
-        DataSource, related_name="content", on_delete=models.CASCADE
-    )  # 数据源URL（外键）
-    content = models.ForeignKey(
-        Content, related_name="data_sources", on_delete=models.CASCADE
-    )  # 内容ID（外键）
-
-    class Meta:
-        unique_together = ("data_source", "content")  # 复合主键
-
-    def __str__(self):
-        return f"{self.data_source.data_source_url} - {self.content.content_id}"

@@ -5,20 +5,22 @@ import jieba.analyse
 from urllib.parse import urljoin
 from django.utils import timezone
 from url_normalize import url_normalize
-from .models import Website, Webpage, Content, Image, DataSource, DataSourceContent
+from .models import Website, Webpage, Content, Image, DataSource
+from dateutil import parser
+from .Downloader import Downloader
 
 
 class Saver:
     @classmethod
-    def save(cls, domain, url, soup):
-        cls.save_webpage(domain, url)
+    def save(cls, id, url, soup):
+        cls.save_webpage(id, url)
         cls.save_text(url, soup)
         cls.process_images(url, soup)
-        cls.find_api_data(url, soup)
+
 
     @staticmethod
-    def save_webpage(domain, url):
-        website_obj, _ = Website.objects.get_or_create(domain=domain)
+    def save_webpage(id, url):
+        website_obj, _ = Website.objects.get_or_create(id=id)
         Webpage.objects.update_or_create(
             url=url,
             defaults={"crawl_time": timezone.now(), "website": website_obj},
@@ -57,7 +59,8 @@ class Saver:
                     # 提取每段top1关键词
                     keywords = jieba.analyse.extract_tags(para, topK=5)
                     if keywords:
-                        paragraph_keywords.extend(keywords)
+                        for k in keywords:
+                            paragraph_keywords.append(k)
 
             # 合并所有关键词
             keywords_str = ",".join(set(paragraph_keywords))  # 去重处理
@@ -72,8 +75,12 @@ class Saver:
                         "text": "\n\n".join(paragraphs),
                     },
                 )
+            ds, _ = DataSource.objects.get_or_create(data_source_url=url)
+            Saver.process_data_source(url,soup)
         except Exception as e:
             logging.error(f"保存文本失败 {url}: {e}")
+
+        
 
     @staticmethod
     def process_images(url, soup):
@@ -90,7 +97,17 @@ class Saver:
                 width = img.get("width", "unknown")
                 height = img.get("height", "unknown")
                 resolution = f"{width}x{height}"[:50]
+                ol=logging.root.level
+                logging.root.setLevel(logging.ERROR)
+                try:
+                    result=Downloader.download(img_url)
+                finally:
+                    logging.root.setLevel(ol)
+                if result is None:
+                    continue
+                img_soup,_ = result
                 ds, _ = DataSource.objects.get_or_create(data_source_url=img_url)
+                Saver.process_data_source(img_url,img_soup)
                 Image.objects.update_or_create(
                     url=ds,
                     defaults={
@@ -101,27 +118,72 @@ class Saver:
                 )
         except Exception as e:
             logging.error(f"处理图片失败 {url}: {e}")
+   
+    @staticmethod
+    def process_data_source(url, soup):
+        try:
+            #webpage_instance, _ = Webpage.objects.get_or_create(url=url)
+            # 1. 提取数据源基本信息
+            ds, _ = DataSource.objects.get_or_create(data_source_url=url)
+            
+            # 2. 提取发布者和发布时间
+            publisher, publish_time = Saver.extract_metadata(soup)
+            
+            # 3. 更新数据源元数据
+            if publisher or publish_time:
+
+                
+                # 仅更新有变化的字段
+                if not ds.publisher and publisher:
+                    ds.publisher = publisher
+                if not ds.publish_time and publish_time:
+                    ds.publish_time = publish_time
+                ds.save()
+            
+            return ds
+            
+        except Exception as e:
+            logging.error(f"提取数据源信息失败 {url}: {e}")
+            return None
 
     @staticmethod
-    def find_api_data(url, soup):
-        try:
-            script_tags = soup.find_all("script", type="application/json")
-            webpage_instance, _ = Webpage.objects.get_or_create(url=url)
-            for script in script_tags:
-                try:
-                    data = json.loads(script.string)
-                    data_str = json.dumps(data, ensure_ascii=False)[:65535]
-                    # 保存到DataSource
-                    ds, _ = DataSource.objects.get_or_create(data_source_url=url)
-                    # 保存到Content
-                    content = Content.objects.create(
-                        text=data_str, webpage=webpage_instance, type="link"
-                    )
-                    # 保存关联关系
-                    DataSourceContent.objects.get_or_create(
-                        data_source=ds, content=content
-                    )
-                except json.JSONDecodeError:
-                    pass
-        except Exception as e:
-            logging.error(f"API数据提取失败 {url}: {e}")
+    def extract_metadata(soup):
+        """
+        从soup中提取发布者和发布时间
+        """
+        publisher = None
+        publish_time = None
+        
+        # 提取发布者
+        publisher_tags = [
+            soup.find('meta', attrs={'property': 'og:site_name'}),
+            soup.find('meta', attrs={'name': 'author'}),
+            soup.find('meta', attrs={'name': 'publisher'}),
+            soup.find('meta', attrs={'property': 'article:publisher'})
+        ]
+        
+        for tag in publisher_tags:
+            if tag and tag.get('content'):
+                publisher = tag['content'].strip()[:100]
+                break
+        
+        # 提取发布时间
+        time_tags = [
+            soup.find('meta', attrs={'property': 'article:published_time'}),
+            soup.find('meta', attrs={'property': 'article:modified_time'}),
+            soup.find('meta', attrs={'name': 'pubdate'}),
+            soup.find('time', attrs={'datetime': True}),
+            soup.find('meta', attrs={'itemprop': 'datePublished'})
+        ]
+        
+        for tag in time_tags:
+            if tag:
+                time_str = tag.get('content') or tag.get('datetime')
+                if time_str:
+                    try:
+                        publish_time = parser.parse(time_str)
+                        break
+                    except (ValueError, TypeError):
+                        continue
+        
+        return publisher, publish_time
