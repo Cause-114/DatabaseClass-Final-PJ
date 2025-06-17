@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="bg-primary text-center text-white p-2 rounded">关键字检索</h2>
+<h2 class="text-center text-white p-2" style="background-color: #4f04b1;">关键字检索</h2>
 <div style="text-align: center; margin-top: 100px;">
     <form method="get" action="{% url 'Query_KeywordSearch' %}" class="d-flex justify-content-center align-items-center"
         style="gap: 10px;">
@@ -9,7 +9,6 @@
         <button type="submit" class="btn btn-primary">检索</button>
     </form>
 </div>
-
 
 {% if query %}
 <h5 class="mb-3 text-secondary">
@@ -31,7 +30,17 @@
             <td>{{ content.content_id }}</td>
             <td>{{ content.keywords }}</td>
             <td>
-                <a href="{% url 'Query_PageContents' content.webpage.id %}">{{ content.webpage.url }}</a>
+                <!-- <a href="{% url 'Query_PageContents' content.webpage.id %}">{{ content.webpage.url|truncatewords:2 }}</a> -->
+                <a href="{% url 'Query_PageContents' content.webpage.id %}" 
+                   title="{{ content.webpage.url }}"
+                   class="url-display">
+                    
+                    {% if content.webpage.url|length > 50 %}
+                        {{ content.webpage.url|truncatechars:47 }}...
+                    {% else %}
+                        {{ content.webpage.url }}
+                    {% endif %}
+                </a>
             </td>
             <td>{{ content.get_type_display }}</td>
             <td>{{ content.text|truncatewords:2 }}</td>

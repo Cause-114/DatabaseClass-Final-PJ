@@ -69,7 +69,7 @@ class Content(models.Model):
     webpage = models.ForeignKey(
         Webpage, related_name="contents", on_delete=models.CASCADE
     )  # 所属网页URL（外键）
-    keywords = models.CharField(max_length=500)  # 关键字
+    keywords = models.CharField(max_length=500,db_index=True)  # 关键字
     type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES)  # 内容类型
 
     def __str__(self):

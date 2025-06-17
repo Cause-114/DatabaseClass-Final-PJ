@@ -27,7 +27,7 @@
                         <tr class="pretty-thead-row">
                             <th class="ps-4">网页URL</th>
                             <th style="width: 160px;">爬取时间</th>
-                            <th class="pe-4" style="width: 240px;">操作</th>
+                            <th class="pe-4" style="width: 250px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,8 +37,8 @@
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-link text-muted me-2"></i>
                                     <div class="text-truncate" style="max-width: 500px;" title="{{ page.url }}">
-                                        <a href="{{ page.url|truncatechars:50 }}" target="_blank" class="text-decoration-none">
-                                            {{ page.url }}
+                                        <a href="{{ page.url }}" target="_blank" class="text-decoration-none">
+                                            {{ page.url|truncatechars:50 }}
                                             <i class="fas fa-external-link-alt ms-1 text-muted"
                                                 style="font-size: 0.8em;"></i>
                                         </a>
