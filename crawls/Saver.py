@@ -1,5 +1,4 @@
 import re
-import json
 import logging
 import jieba.analyse
 from urllib.parse import urljoin
@@ -56,7 +55,7 @@ class Saver:
             paragraph_keywords = []
             for para in paragraphs:
                 if para:
-                    # 提取每段top1关键词
+                    # 提取每段top5关键词
                     keywords = jieba.analyse.extract_tags(para, topK=5)
                     if keywords:
                         for k in keywords:

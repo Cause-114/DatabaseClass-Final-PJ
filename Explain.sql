@@ -1,53 +1,224 @@
--- 以下内容是本项目数据库结构与实际操作的示意SQL语句，注意该文件只是用作本项目涉及的
--- 数据库操作概念展示，实际操作已经嵌入Python代码，所以本文件不是运行项目的必须文件。
+-- 以下内容是本项目数据库结构与实际操作的示意SQL语句，注意该文件只是用作本项目涉及的数据库操作概念展示，
+-- 实际操作已经嵌入Python代码，所以本文件不是运行项目的必须文件。建表语句SQL在第10部分。
+DROP DATABASE samp_db;
 CREATE DATABASE samp_db;
 use samp_db;-- 在这里变成你本机的数据库名称。
------------------------------- Create core tables --------------------------------
 
+-- -----------------------------
+-- 1. 主页面统计 main_view
+-- -----------------------------
+SELECT COUNT(*) FROM crawls_website;
+
+SELECT COUNT(*) FROM crawls_webpage;
+
+SELECT COUNT(*) FROM crawls_content;
+
+-- -----------------------------
+-- 2. 新增爬虫任务 user_input_view
+-- -----------------------------
+-- 查询网站是否已存在
+SELECT *
+FROM crawls_website
+WHERE
+    user_id = < user_id >
+    AND domain = '<domain>';
+
+-- 若不存在则插入
+INSERT INTO
+    crawls_website (domain, user_id)
+VALUES ('<domain>', < user_id >);
+
+-- 插入爬取任务记录
+INSERT INTO
+    crawls_crawltask (
+        status,
+        start_time,
+        user_id,
+        website_id
+    )
+VALUES (
+        'crawling',
+        CURRENT_TIMESTAMP,
+        < user_id >,
+        < website_id >
+    );
+
+-- -----------------------------
+-- 3. 展示已完成爬取网站 recent_websites
+-- -----------------------------
+-- 管理员视角
+SELECT w.*, COUNT(DISTINCT p.id) AS page_count
+FROM
+    crawls_website w
+    JOIN crawls_crawltask t ON w.id = t.website_id
+    LEFT JOIN crawls_webpage p ON w.id = p.website_id
+WHERE
+    t.status = 'complete'
+GROUP BY
+    w.id
+ORDER BY w.domain DESC;
+
+-- 普通用户视角
+SELECT w.*, COUNT(DISTINCT p.id) AS page_count
+FROM
+    crawls_website w
+    JOIN crawls_crawltask t ON w.id = t.website_id
+    LEFT JOIN crawls_webpage p ON w.id = p.website_id
+WHERE
+    t.status = 'complete'
+    AND w.user_id = < user_id >
+GROUP BY
+    w.id
+ORDER BY w.domain DESC;
+
+-- -----------------------------
+-- 4. 删除网站 delete_webstie_view
+-- -----------------------------
+-- 删除图片相关数据源
+DELETE FROM crawls_datasource
+WHERE
+    data_source_url IN (
+        SELECT url
+        FROM crawls_image
+        WHERE
+            webpage_id IN (
+                SELECT id
+                FROM crawls_webpage
+                WHERE
+                    website_id = < website_id >
+            )
+    );
+
+-- 删除网页对应数据源
+DELETE FROM crawls_datasource
+WHERE
+    data_source_url IN (
+        SELECT url
+        FROM crawls_webpage
+        WHERE
+            website_id = < website_id >
+    );
+
+-- 删除网页内容与图片
+DELETE FROM crawls_content
+WHERE
+    webpage_id IN (
+        SELECT id
+        FROM crawls_webpage
+        WHERE
+            website_id = < website_id >
+    );
+
+DELETE FROM crawls_image
+WHERE
+    webpage_id IN (
+        SELECT id
+        FROM crawls_webpage
+        WHERE
+            website_id = < website_id >
+    );
+
+-- 删除网页
+DELETE FROM crawls_webpage WHERE website_id = < website_id >;
+
+-- 删除网站
+DELETE FROM crawls_website WHERE id = < website_id >;
+
+-- -----------------------------
+-- 5. 删除网页 delete_webpage_view
+-- -----------------------------
+DELETE FROM crawls_datasource
+WHERE
+    data_source_url = '<webpage_url>';
+
+DELETE FROM crawls_datasource
+WHERE
+    data_source_url IN (
+        SELECT url
+        FROM crawls_image
+        WHERE
+            webpage_id = < webpage_id >
+    );
+
+DELETE FROM crawls_content WHERE webpage_id = < webpage_id >;
+
+DELETE FROM crawls_image WHERE webpage_id = < webpage_id >;
+
+DELETE FROM crawls_webpage WHERE id = < webpage_id >;
+
+-- -----------------------------
+-- 6. 删除内容 delete_content_view
+-- -----------------------------
+DELETE FROM crawls_content WHERE content_id = < content_id >;
+
+DELETE FROM crawls_datasource
+WHERE
+    data_source_url = (
+        SELECT url
+        FROM crawls_webpage
+        WHERE
+            id = (
+                SELECT webpage_id
+                FROM crawls_content
+                WHERE
+                    content_id = < content_id >
+            )
+    );
+
+-- -----------------------------
+-- 7. 删除图片 delete_image_view
+-- -----------------------------
+DELETE FROM crawls_image WHERE url_id = '<url>';
+
+DELETE FROM crawls_datasource WHERE data_source_url = '<url>';
+
+-- -----------------------------
+-- 8. 搜索内容 search_content_view
+-- -----------------------------
+-- 管理员
+SELECT * FROM crawls_content WHERE keywords LIKE '%<query>%';
+
+-- 普通用户
+SELECT c.*
+FROM
+    crawls_content c
+    JOIN crawls_webpage w ON c.webpage_id = w.id
+    JOIN crawls_website s ON w.website_id = s.id
+WHERE
+    c.keywords LIKE '%<query>%'
+    AND s.user_id = < user_id >;
+
+-- -----------------------------
+-- 9. 查询页面、图片、内容
+-- -----------------------------
+-- 某网站所有网页
+SELECT *
+FROM crawls_webpage
+WHERE
+    website_id = < site_id >
+ORDER BY crawl_time DESC;
+
+-- 某网页所有图片
+SELECT * FROM crawls_image WHERE webpage_id = < page_id >;
+
+-- 某网页所有内容
+SELECT * FROM crawls_content WHERE webpage_id = < page_id >;
+
+-- -----------------------------
+-- 10. migrations 自动的建表SQL语句
+-- -----------------------------
 -- Create model DataSource
 CREATE TABLE `crawls_datasource` (
     `data_source_url` varchar(500) NOT NULL PRIMARY KEY,
-    `publisher` varchar(100) NOT NULL,
-    `publish_time` datetime(6) NOT NULL
-);
-
--- Create model Website
-CREATE TABLE `crawls_website` (
-    `domain` varchar(255) NOT NULL PRIMARY KEY,
-    `company` varchar(100) NOT NULL,
-    `contact` varchar(100) NOT NULL,
-    `crawl_freq` varchar(10) NOT NULL,
-    `crawl_status` varchar(10) NOT NULL
-);
-
--- Create model CrawlTask
-CREATE TABLE `crawls_crawltask` (
-    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `task_time` datetime(6) NOT NULL,
-    `status` varchar(10) NOT NULL,
-    `website_id` varchar(255) NOT NULL,
-    CONSTRAINT `crawls_crawltask_website_id_fk` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`domain`)
+    `publisher` varchar(100) NULL,
+    `publish_time` datetime(6) NULL
 );
 
 -- Create model Webpage
 CREATE TABLE `crawls_webpage` (
-    `url` varchar(500) NOT NULL PRIMARY KEY,
-    `crawl_time` datetime(6) NOT NULL,
-    `website_id` varchar(255) NOT NULL,
-    `crawltask_id` integer NOT NULL,
-    CONSTRAINT `crawls_webpage_website_id_fk` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`domain`),
-    CONSTRAINT `crawls_webpage_crawltask_id_fk` FOREIGN KEY (`crawltask_id`) REFERENCES `crawls_crawltask` (`id`)
-);
-
--- Create model Image
-CREATE TABLE `crawls_image` (
-    `image_url` varchar(500) NOT NULL PRIMARY KEY,
-    `description` varchar(255) NOT NULL,
-    `resolution` varchar(50) NOT NULL,
-    `data_source_id` varchar(500) NOT NULL,
-    `webpage_id` varchar(500) NOT NULL,
-    CONSTRAINT `crawls_image_data_source_fk` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`),
-    CONSTRAINT `crawls_image_webpage_fk` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`url`)
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `url` varchar(500) NOT NULL,
+    `crawl_time` datetime(6) NOT NULL
 );
 
 -- Create model Content
@@ -56,289 +227,66 @@ CREATE TABLE `crawls_content` (
     `text` longtext NOT NULL,
     `keywords` varchar(500) NOT NULL,
     `type` varchar(10) NOT NULL,
-    `webpage_id` varchar(500) NOT NULL,
-    CONSTRAINT `crawls_content_webpage_fk` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`url`)
+    `webpage_id` integer NOT NULL
 );
 
--- Create model DataSourceContent (中间表)
-CREATE TABLE `crawls_datasourcecontent` (
-    `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `content_id` integer NOT NULL,
-    `data_source_id` varchar(500) NOT NULL,
-    CONSTRAINT `datasource_content_unique` UNIQUE (
-        `data_source_id`,
-        `content_id`
-    ),
-    CONSTRAINT `crawls_datasourcecontent_content_fk` FOREIGN KEY (`content_id`) REFERENCES `crawls_content` (`content_id`),
-    CONSTRAINT `crawls_datasourcecontent_datasource_fk` FOREIGN KEY (`data_source_id`) REFERENCES `crawls_datasource` (`data_source_url`)
+-- Create model Website
+CREATE TABLE `crawls_website` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `domain` varchar(255) NOT NULL,
+    `title` varchar(255) NULL,
+    `description` longtext NULL,
+    `homepage` varchar(200) NULL,
+    `user_id` integer NOT NULL
 );
------------------------------------删除数据----------------------------------
-SET FOREIGN_KEY_CHECKS = 0;
-truncate table crawls_content;
-TRUNCATE TABLE crawls_crawltask;
-truncate table crawls_image;
-truncate table crawls_datasource;
-truncate table crawls_datasourcecontent;
-truncate table crawls_webpage;
-truncate table crawls_website;
-SET FOREIGN_KEY_CHECKS = 1;
 
--- 删除网页相关内容
-DELETE FROM crawls_content
-WHERE
-    webpage_id = 'https://example.com/page1';
+-- Add field website to webpage
+ALTER TABLE `crawls_webpage`
+ADD COLUMN `website_id` integer NOT NULL,
+ADD CONSTRAINT `crawls_webpage_website_id_5dec4ee6_fk_crawls_website_id` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`id`);
 
--- 删除网页相关图片（图片通过 DataSource 关联）
-DELETE FROM crawls_image
-WHERE
-    webpage_id = 'https://example.com/page1';
+-- Create model CrawlTask
+CREATE TABLE `crawls_crawltask` (
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `status` varchar(10) NOT NULL,
+    `start_time` datetime(6) NOT NULL,
+    `end_time` datetime(6) NULL,
+    `error_msg` longtext NULL,
+    `user_id` integer NOT NULL,
+    `website_id` integer NOT NULL
+);
 
--- 最后删除网页本身
-DELETE FROM crawls_webpage WHERE url = 'https://example.com/page1';
+-- Create model Image
+CREATE TABLE `crawls_image` (
+    `url_id` varchar(500) NOT NULL PRIMARY KEY,
+    `description` varchar(255) NOT NULL,
+    `resolution` varchar(50) NOT NULL,
+    `webpage_id` integer NOT NULL
+);
 
--- 删除某网站的所有内容（通过网页）
-DELETE FROM crawls_content
-WHERE
-    webpage_id IN (
-        SELECT url
-        FROM crawls_webpage
-        WHERE
-            website_id = 'example.com'
-    );
+-- Alter unique_together for webpage (1 constraint(s))
+ALTER TABLE `crawls_webpage`
+ADD CONSTRAINT `crawls_webpage_url_website_id_d0261562_uniq` UNIQUE (`url`, `website_id`);
 
--- 删除图片
-DELETE FROM crawls_image
-WHERE
-    webpage_id IN (
-        SELECT url
-        FROM crawls_webpage
-        WHERE
-            website_id = 'example.com'
-    );
+ALTER TABLE `crawls_content`
+ADD CONSTRAINT `crawls_content_webpage_id_285fd3a8_fk_crawls_webpage_id` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`id`);
 
--- 删除网页
-DELETE FROM crawls_webpage WHERE website_id = 'example.com';
+CREATE INDEX `crawls_content_keywords_0d3b71de` ON `crawls_content` (`keywords`);
 
--- 删除网站
-DELETE FROM crawls_website WHERE domain = 'example.com';
+ALTER TABLE `crawls_website`
+ADD CONSTRAINT `crawls_website_user_id_domain_73d622c4_uniq` UNIQUE (`user_id`, `domain`);
 
--- 删除中间表中的内容-数据源关联
-DELETE FROM crawls_datasourcecontent
-WHERE
-    data_source_id = 'https://data.example.com/json1';
+ALTER TABLE `crawls_website`
+ADD CONSTRAINT `crawls_website_user_id_08f8d9b4_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
 
--- 删除图片（如果有关联）
-DELETE FROM crawls_image
-WHERE
-    url_id = 'https://data.example.com/json1';
+ALTER TABLE `crawls_crawltask`
+ADD CONSTRAINT `crawls_crawltask_user_id_b4d5827d_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
 
--- 删除数据源本体
-DELETE FROM crawls_datasource
-WHERE
-    data_source_url = 'https://data.example.com/json1';
--- 根据关键字删除内容
-DELETE FROM crawls_content WHERE keywords LIKE '%示例关键字%';
--- 删除那些爬取失败的website
-DELETE FROM crawls_website WHERE crawl_status = 'fail';
+ALTER TABLE `crawls_crawltask`
+ADD CONSTRAINT `crawls_crawltask_website_id_3baa3555_fk_crawls_website_id` FOREIGN KEY (`website_id`) REFERENCES `crawls_website` (`id`);
 
------------------------------------插入数据-------------------------------------
--- 插入网站
-INSERT INTO
-    crawls_website (
-        domain,
-        company,
-        contact,
-        crawl_freq,
-        crawl_status
-    )
-VALUES (
-        'example.com',
-        '示例公司',
-        'contact@example.com',
-        'daily',
-        'complete'
-    );
+ALTER TABLE `crawls_image`
+ADD CONSTRAINT `crawls_image_url_id_9d23e96f_fk_crawls_da` FOREIGN KEY (`url_id`) REFERENCES `crawls_datasource` (`data_source_url`);
 
--- 插入爬取任务（与网站绑定）
-INSERT INTO
-    crawls_crawltask (task_time, status, website_id)
-VALUES (
-        '2025-06-14 14:30:00',
-        'finished',
-        'example.com'
-    );
-
--- 假设刚刚插入的任务 id = 1（你可以用 SELECT LAST_INSERT_ID() 获取）
-
--- 插入网页（关联网站 & 任务）
-INSERT INTO
-    crawls_webpage (
-        url,
-        crawl_time,
-        website_id,
-        crawltask_id
-    )
-VALUES (
-        'https://example.com/page1',
-        '2025-06-14 15:00:00',
-        'example.com',
-        1
-    );
-
--- 插入网页内容
-INSERT INTO
-    crawls_content (
-        text,
-        webpage_id,
-        keywords,
-        type
-    )
-VALUES (
-        '欢迎访问本站主页。',
-        'https://example.com/page1',
-        '欢迎,主页',
-        'text'
-    );
-
--- 插入图片
-INSERT INTO
-    crawls_image (
-        image_url,
-        webpage_id,
-        description,
-        resolution,
-        data_source_id
-    )
-VALUES (
-        'https://example.com/img1.jpg',
-        'https://example.com/page1',
-        'logo图片',
-        '1920x1080',
-        'https://example.com/img1.jpg'
-    );
-
--- 插入数据源
-INSERT INTO
-    crawls_datasource (
-        data_source_url,
-        publisher,
-        publish_time
-    )
-VALUES (
-        'https://example.com/img1.jpg',
-        '示例发布者',
-        '2025-06-14 10:30:00'
-    );
-
--- 插入数据源与内容的关联
-INSERT INTO
-    crawls_datasourcecontent (data_source_id, content_id)
-VALUES (
-        'https://example.com/img1.jpg',
-        1
-    );
------------------------------------修改数据-------------------------------------
--- 修改网站信息
-UPDATE crawls_website
-SET
-    company = '新公司名称',
-    contact = 'new_contact@example.com',
-    crawl_status = 'crawling'
-WHERE
-    domain = 'example.com';
-
--- 修改网页时间
-UPDATE crawls_webpage
-SET
-    crawl_time = '2025-06-14 18:00:00'
-WHERE
-    url = 'https://example.com/page1';
-
--- 修改网页内容
-UPDATE crawls_content
-SET
-    keywords = '欢迎,主页,示例',
-    type = 'link'
-WHERE
-    content_id = 1;
-
--- 修改图片
-UPDATE crawls_image
-SET
-    description = '网站主图',
-    resolution = '1280x720'
-WHERE
-    image_url = 'https://example.com/img1.jpg';
-
--- 修改数据源
-UPDATE crawls_datasource
-SET
-    publisher = '新发布者',
-    publish_time = '2025-06-14 12:00:00'
-WHERE
-    data_source_url = 'https://example.com/img1.jpg';
-
--- 删除原有数据源-内容关联
-DELETE FROM crawls_datasourcecontent
-WHERE
-    data_source_id = 'https://example.com/img1.jpg'
-    AND content_id = 1;
-
--- 添加新的数据源-内容关联（假设换成 img2.jpg）
-INSERT INTO
-    crawls_datasourcecontent (data_source_id, content_id)
-VALUES (
-        'https://example.com/img2.jpg',
-        1
-    );
------------------------------------查找数据-------------------------------------
--- main_view
-SELECT COUNT(*) FROM crawls_website;
-
-SELECT COUNT(*) FROM crawls_webpage;
-
-SELECT COUNT(*) FROM crawls_content;
-
-SELECT w.*
-FROM
-    crawls_webpage w
-    INNER JOIN crawls_website s ON w.website_id = s.domain
-ORDER BY w.crawl_time DESC
-LIMIT 5;
-
--- search_content_view
-SELECT *
-FROM
-    crawls_content c
-    INNER JOIN crawls_webpage w ON c.webpage_id = w.url
-WHERE
-    c.keywords ILIKE '%<query>%';
-
--- recent_websites
-SELECT *
-FROM crawls_website
-WHERE
-    crawl_status = 'complete'
-ORDER BY domain DESC
-LIMIT 10;
-
--- recent_websites
-SELECT *
-FROM crawls_website
-WHERE
-    crawl_status = 'complete'
-ORDER BY domain DESC
-LIMIT 10;
-
--- website_webpages_view
-SELECT *
-FROM crawls_webpage
-WHERE
-    website_id = '<domain>'
-ORDER BY crawl_time DESC;
-
--- webpage_images_view
-SELECT * FROM crawls_image WHERE webpage_id = '<url>';
-
---webpage_content_view
-SELECT * FROM crawls_content WHERE webpage_id = '<url>';
+ALTER TABLE `crawls_image`
+ADD CONSTRAINT `crawls_image_webpage_id_0557f0e0_fk_crawls_webpage_id` FOREIGN KEY (`webpage_id`) REFERENCES `crawls_webpage` (`id`);

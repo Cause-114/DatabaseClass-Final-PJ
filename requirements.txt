@@ -1,0 +1,23 @@
+# Web 框架
+Django>=4.2
+
+# 数据库相关
+mysqlclient>=2.2  # 如果编译失败可使用 pymysql 作为替代
+# pymysql>=1.1.0  # 若替代使用 mysqlclient，可取消此行注释
+
+# 环境变量加载
+django-environ>=0.11.2
+
+# 网络请求与解析
+requests>=2.31
+beautifulsoup4>=4.12.2
+url-normalize>=1.4.3
+
+# 中文分词与关键词提取
+jieba>=0.42.1
+
+# 日期处理
+python-dateutil>=2.9.0
+
+# 可选：开发日志（如有用 logging 配置）
+# loguru>=0.7.2

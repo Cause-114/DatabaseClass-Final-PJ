@@ -67,9 +67,8 @@ class Crawler:
                 if count == 1:
                     self.extract_website_info(soup)  # 抽取站点信息
                 # if(len(self.queue)<max_pages-count):
-                #     print(len(self.queue),count)
+                    # self.extract_links(normalized_url, soup)
                 self.extract_links(normalized_url, soup)
-            print(len(self.queue))
         except Exception as e:
             self.handle_fatal_error(str(e))
         finally:
