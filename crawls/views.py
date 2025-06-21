@@ -388,5 +388,8 @@ def register_view(request):
     return render(request, "crawls/User_register.html", {"form": form})
 
 
+def help_center_view(request):
+    return render(request, "crawls/Help_center.html")
+
 def about_us_view(request):
     return render(request, "crawls/About_us.html")

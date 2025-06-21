@@ -12,12 +12,36 @@ urlpatterns = [
     ####################### 删 ############################
     path("Delete/", views.website_delete_list_view, name="Delete_List"),
     path("Delete/Website/<int:id>/", views.delete_webstie_view, name="Delete_Website"),
-    path("Delete/SitePages/<int:id>/", views.delete_site_page_view, name="Delete_SitePage"),
-    path("Delete/Webpage/Delete/<int:webpage_id>/", views.delete_webpage_view, name="Delete_Webpage"),
-    path("Delete/Webpage/<int:webpage_id>/Contents/", views.view_webpage_contents, name="Delete_PageContent"),
-    path("Delete/Webpage/Content/Delete/<int:content_id>/", views.delete_content_view, name="Delete_ContentItem"),
-    path("Delete/Webpage/Image/Delete/<path:url>/", views.delete_image_view, name="Delete_ImageItem"),
-    path("Delete/Webpage/Images/<int:webpage_id>/", views.view_webpage_images, name="Delete_PageImage"),
+    path(
+        "Delete/SitePages/<int:id>/",
+        views.delete_site_page_view,
+        name="Delete_SitePage",
+    ),
+    path(
+        "Delete/Webpage/Delete/<int:webpage_id>/",
+        views.delete_webpage_view,
+        name="Delete_Webpage",
+    ),
+    path(
+        "Delete/Webpage/<int:webpage_id>/Contents/",
+        views.view_webpage_contents,
+        name="Delete_PageContent",
+    ),
+    path(
+        "Delete/Webpage/Content/Delete/<int:content_id>/",
+        views.delete_content_view,
+        name="Delete_ContentItem",
+    ),
+    path(
+        "Delete/Webpage/Image/Delete/<path:url>/",
+        views.delete_image_view,
+        name="Delete_ImageItem",
+    ),
+    path(
+        "Delete/Webpage/Images/<int:webpage_id>/",
+        views.view_webpage_images,
+        name="Delete_PageImage",
+    ),
     ####################### 改 ############################
     ####################### 查 ############################
     path("Query/KeySearch/", views.search_content_view, name="Query_KeywordSearch"),
@@ -56,4 +80,5 @@ urlpatterns = [
         views.about_us_view,
         name="About_us",
     ),
+    path("help/", views.help_center_view, name="Help_Center"),
 ]
