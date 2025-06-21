@@ -221,6 +221,7 @@ project_root/
 │       └── crawls/         # 具体界面，大多继承base.html
 │
 ├── Explain.sql            # 说明文档：SQL操作、删除逻辑、建表语句等
+├── sample_data.sql        # 用以测试的数据：包含3个网站共120条数据、3个用户（包含1管理员） 
 ├── README.md              # 使用说明
 └── manage.py              # 启动/管理脚本
 ```

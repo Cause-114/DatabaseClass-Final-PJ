@@ -1,0 +1,80 @@
+{% extends "Base_abt.html" %}
+{% block content %}
+<section class="hero about">
+    <div class="container">
+        <h1 class="text-white">帮助中心</h1>
+        <p>DataSpider 使用指南</p>
+    </div>
+</section>
+<div class="container py-4">
+    <div class="card shadow-lg border-0 mb-5">
+        <div class="card-body px-5 py-4">
+            <!-- 项目简介 -->
+            <section class="mb-5">
+                <h2 class="h4 border-start border-4 ps-3 border-primary">一、项目简介</h2>
+                <p>本项目为基于 <strong>Django</strong> 框架开发的网页爬虫系统，支持用户注册、登录后提交网站链接进行网页内容抓取，包括文字与图片，并可在网页端系统中查询、管理相关数据。</p>
+            </section>
+
+            <!-- 开发环境 -->
+            <section class="mb-5">
+                <h2 class="h4 border-start border-4 ps-3 border-success">二、开发环境</h2>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>操作系统：</strong>Windows 10+、macOS、Linux</li>
+                    <li class="list-group-item"><strong>Python：</strong>推荐 ≥ 3.11（示例为 3.12.6）</li>
+                    <li class="list-group-item"><strong>MySQL：</strong>推荐 ≥ 8.0（示例为 8.0.41）</li>
+                    <li class="list-group-item"><strong>依赖安装：</strong><code>pip install -r requirements.txt</code></li>
+                </ul>
+            </section>
+
+            <!-- 数据库初始化 -->
+            <section class="mb-5">
+                <h2 class="h4 border-start border-4 ps-3 border-warning">三、数据库初始化</h2>
+                <ol>
+                    <li>确保已启动 MySQL，并已创建数据库</li>
+                    <li>在 <code>mysite/</code> 目录下创建 <code>.env</code> 文件，内容如下：</li>
+                </ol>
+                <pre class="bg-light border rounded p-3"><code>DB_NAME=your_database
+DB_USER=root
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=3306</code></pre>
+                <p>然后执行迁移命令：</p>
+                <pre class="bg-light border rounded p-3"><code>python manage.py makemigrations crawls
+python manage.py migrate</code></pre>
+            </section>
+
+            <!-- 运行项目 -->
+            <section class="mb-5">
+                <h2 class="h4 border-start border-4 ps-3 border-info">四、运行项目</h2>
+                <pre class="bg-light border rounded p-3"><code>python manage.py runserver</code></pre>
+                <p>打开浏览器访问：<a href="http://127.0.0.1:8000" target="_blank">http://127.0.0.1:8000</a></p>
+            </section>
+
+            <!-- 功能模块 -->
+            <section class="mb-5">
+                <h2 class="h4 border-start border-4 ps-3 border-danger">五、主要功能</h2>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">爬取任务创建与调度</li>
+                    <li class="list-group-item">网站、网页、图片、文本内容浏览</li>
+                    <li class="list-group-item">关键词搜索</li>
+                    <li class="list-group-item">用户注册、登录与权限管理</li>
+                    <li class="list-group-item">数据删除（限拥有者/管理员）</li>
+                </ul>
+            </section>
+
+            <!-- 项目结构 -->
+            <section class="mb-3">
+                <h2 class="h4 border-start border-4 ps-3 border-secondary">六、项目结构</h2>
+                <pre class="bg-light border rounded p-3"><code>project_root/
+├── mysite/
+├── static/
+├── crawls/
+│   ├── models.py / views.py / templates/
+├── sample_data.sql
+├── README.md
+└── manage.py</code></pre>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
